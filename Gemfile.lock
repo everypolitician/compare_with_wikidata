@@ -4,6 +4,11 @@ GEM
     coderay (1.1.1)
     domain_name (0.5.20170404)
       unf (>= 0.0.5, < 1.0.0)
+    everypolitician (0.20.0)
+      everypolitician-popolo (>= 0.8.0)
+      require_all
+    everypolitician-popolo (0.8.0)
+      require_all
     http-cookie (1.0.3)
       domain_name (~> 0.5)
     method_source (0.8.2)
@@ -15,6 +20,7 @@ GEM
       coderay (~> 1.1.0)
       method_source (~> 0.8.1)
       slop (~> 3.4)
+    require_all (1.4.0)
     rest-client (2.0.2)
       http-cookie (>= 1.0.2, < 2.0)
       mime-types (>= 1.16, < 4.0)
@@ -28,6 +34,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  everypolitician
   pry
   rest-client
 
