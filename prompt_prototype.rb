@@ -46,7 +46,7 @@ morph_records = morph_records(morph_scraper, scraper_sql)
 
 country_slug, house_slug = ep_country_and_house.split('/')
 popolo = Everypolitician::Index.new.country(country_slug).legislature(house_slug).popolo
-morph_wikidata_lookup = popolo.persons.map { |p| [p.identifier(ep_id_scheme), p.identifier('wikidata')] }.to_h
+morph_wikidata_lookup = popolo.persons.map { |p| [p.identifier(ep_id_scheme), p.wikidata] }.to_h
 
 morph_ids_with_wikidata, morph_ids_without_wikidata = morph_records.keys.partition do |morph_id|
   morph_wikidata_lookup[morph_id]
