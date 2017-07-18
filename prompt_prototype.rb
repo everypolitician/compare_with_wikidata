@@ -41,11 +41,23 @@ def morph_records(scraper, query)
   JSON.parse(RestClient.get(url), symbolize_names: true).map { |d| [d[:id], d]  }.to_h
 end
 
-wikidata_records = wikidata_sparql("SELECT ?item ?itemLabel WHERE { ?item wdt:P39 wd:#{wikidata_membership_item}.  SERVICE wikibase:label { bd:serviceParam wikibase:language \"[AUTO_LANGUAGE],en\". } }")
-morph_records = morph_records(morph_scraper, scraper_sql)
-
 country_slug, house_slug = ep_country_and_house.split('/')
 popolo = Everypolitician::Index.new.country(country_slug).legislature(house_slug).popolo
+
+house_wikidata_id = popolo.organizations.find { |o| o.classification == 'legislature' }.wikidata
+sparql = %(
+SELECT ?membership ?membershipLabel ?item ?itemLabel WHERE {
+  # Find any memberships that are "part of" (P361) the house
+  ?membership wdt:P361 wd:#{house_wikidata_id} .
+  # Find any items that have a "position held" (P39) of any house membership
+  ?item wdt:P39 ?membership .
+  SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }
+}
+)
+
+wikidata_records = wikidata_sparql(sparql)
+morph_records = morph_records(morph_scraper, scraper_sql)
+
 morph_wikidata_lookup = popolo.persons.map { |p| [p.identifier(ep_id_scheme), p.wikidata] }.to_h
 
 morph_ids_with_wikidata, morph_ids_without_wikidata = morph_records.keys.partition do |morph_id|
@@ -57,7 +69,7 @@ wikidate_ids_from_morph = morph_ids_with_wikidata.map { |morph_id| morph_wikidat
 not_in_wikidata = wikidate_ids_from_morph - wikidata_records.keys
 not_in_morph = wikidata_records.keys - wikidate_ids_from_morph
 
-puts "Records missing a P39 (position_held) of #{wikidata_membership_item}:"
+puts "Records missing a P39 (position_held) in house #{house_wikidata_id}:"
 wikidata_item_to_morph_id = morph_wikidata_lookup.to_a.map(&:reverse).to_h
 not_in_wikidata.each do |item_id|
   morph_record = morph_records[wikidata_item_to_morph_id[item_id]]
