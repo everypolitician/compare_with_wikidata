@@ -8,14 +8,14 @@ require 'everypolitician'
 # arguments: we might want to make them named options, or for the the
 # command to take a configuration file specifying them instead.
 
-if ARGV.length < 4 || ARGV.length > 5
-  abort """Usage: #{$0} EP_COUNTRY_AND_HOUSE MORPH_SCRAPER EP_ID_SCHEME WIKIDATA_MEMBERSHIP_ITEM [SCRAPER_SQL]
-e.g. ruby prompt_prototype.rb Nigeria/Senate everypolitician-scrapers/nigeria-national-assembly nass Q19822359 \"SELECT * FROM data WHERE js_position = 'Sen'\"
-e.g. ruby prompt_prototype.rb United-States-of-America/House tmtmtmtm/us-congress-members bioguide Q13218630
+unless (3..4).include?(ARGV.size)
+  abort """Usage: #{$0} EP_COUNTRY_AND_HOUSE MORPH_SCRAPER EP_ID_SCHEME [SCRAPER_SQL]
+e.g. ruby prompt_prototype.rb Nigeria/Senate everypolitician-scrapers/nigeria-national-assembly nass \"SELECT * FROM data WHERE js_position = 'Sen'\"
+e.g. ruby prompt_prototype.rb United-States-of-America/House tmtmtmtm/us-congress-members bioguide
 """
 end
 
-ep_country_and_house, morph_scraper, ep_id_scheme, wikidata_membership_item, scraper_sql = ARGV
+ep_country_and_house, morph_scraper, ep_id_scheme, scraper_sql = ARGV
 scraper_sql ||= 'SELECT * FROM data'
 
 unless ENV['MORPH_API_KEY']
