@@ -2,6 +2,7 @@ require 'bundler/setup'
 require 'json'
 require 'uri'
 require 'rest-client'
+require 'everypolitician'
 
 # FIXME: it's a bit awkward having so many positional command line
 # arguments: we might want to make them named options, or for the the
@@ -10,7 +11,7 @@ require 'rest-client'
 if ARGV.length < 4 || ARGV.length > 5
   abort """Usage: #{$0} EP_COUNTRY_AND_HOUSE MORPH_SCRAPER EP_ID_SCHEME WIKIDATA_MEMBERSHIP_ITEM [SCRAPER_SQL]
 e.g. ruby prompt_prototype.rb Nigeria/Senate everypolitician-scrapers/nigeria-national-assembly nass Q19822359 \"SELECT * FROM data WHERE js_position = 'Sen'\"
-e.g. ruby prompt_prototype.rb United_States_of_America/House tmtmtmtm/us-congress-members bioguide Q13218630
+e.g. ruby prompt_prototype.rb United-States-of-America/House tmtmtmtm/us-congress-members bioguide Q13218630
 """
 end
 
@@ -40,17 +41,12 @@ def morph_records(scraper, query)
   JSON.parse(RestClient.get(url), symbolize_names: true).map { |d| [d[:id], d]  }.to_h
 end
 
-# Get an identifier's value from a Popolo person representation in JSON
-def identifier(popolo_person, scheme)
-  popolo_person[:identifiers].find { |i| i[:scheme] == scheme }.to_h[:identifier]
-end
-
 wikidata_records = wikidata_sparql("SELECT ?item ?itemLabel WHERE { ?item wdt:P39 wd:#{wikidata_membership_item}.  SERVICE wikibase:label { bd:serviceParam wikibase:language \"[AUTO_LANGUAGE],en\". } }")
 morph_records = morph_records(morph_scraper, scraper_sql)
 
-popolo_url = "https://raw.githubusercontent.com/everypolitician/everypolitician-data/master/data/#{ep_country_and_house}/ep-popolo-v1.0.json"
-popolo = JSON.parse(RestClient.get(popolo_url).to_s, symbolize_names: true)
-morph_wikidata_lookup = popolo[:persons].map { |p| [identifier(p, ep_id_scheme), identifier(p, 'wikidata')] }.to_h
+country_slug, house_slug = ep_country_and_house.split('/')
+popolo = Everypolitician::Index.new.country(country_slug).legislature(house_slug).popolo
+morph_wikidata_lookup = popolo.persons.map { |p| [p.identifier(ep_id_scheme), p.identifier('wikidata')] }.to_h
 
 morph_ids_with_wikidata, morph_ids_without_wikidata = morph_records.keys.partition do |morph_id|
   morph_wikidata_lookup[morph_id]
