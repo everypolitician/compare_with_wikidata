@@ -1,9 +1,9 @@
 require 'bundler/setup'
 require 'json'
-require 'everypolitician'
 
 require_relative 'lib/membership_list/morph'
 require_relative 'lib/membership_list/wikidata'
+require_relative 'lib/mapping/ep_identifier_to_wikidata'
 
 # FIXME: it's a bit awkward having so many positional command line
 # arguments: we might want to make them named options, or for the the
@@ -32,9 +32,9 @@ wikidata_list = MembershipList::Wikidata.new(
 
 wikidata_records = wikidata_list.to_a.map { |h| [h[:item_id], h] }.to_h
 
-country_slug, house_slug = ep_country_and_house.split('/')
-popolo = Everypolitician::Index.new.country(country_slug).legislature(house_slug).popolo
-morph_wikidata_lookup = popolo.persons.map { |p| [p.identifier(ep_id_scheme), p.wikidata] }.to_h
+morph_wikidata_lookup = Mapping::EPIdentifierToWikidata.new(
+  ep_slug: ep_country_and_house, ep_id_scheme: ep_id_scheme
+).to_h
 
 morph_ids_with_wikidata, morph_ids_without_wikidata = morph_records.keys.partition do |morph_id|
   morph_wikidata_lookup[morph_id]
