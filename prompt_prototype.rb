@@ -1,9 +1,9 @@
 require 'bundler/setup'
 require 'json'
-require 'rest-client'
 require 'everypolitician'
 
 require_relative 'lib/membership_list/morph'
+require_relative 'lib/membership_list/wikidata'
 
 # FIXME: it's a bit awkward having so many positional command line
 # arguments: we might want to make them named options, or for the the
@@ -19,20 +19,6 @@ end
 ep_country_and_house, morph_scraper, ep_id_scheme, wikidata_membership_item, scraper_sql = ARGV
 scraper_sql ||= 'SELECT * FROM data'
 
-WIKIDATA_SPARQL_URL = 'https://query.wikidata.org/sparql'
-
-def wikidata_sparql(query)
-  result = RestClient.get WIKIDATA_SPARQL_URL, params: { query: query, format: 'json' }
-  json = JSON.parse(result, symbolize_names: true)
-  json[:results][:bindings].map do |res|
-    url = res[:item][:value]
-    item_id = url.split('/').last
-    [item_id, {url: url, name: res[:itemLabel][:value]}]
-  end.to_h
-rescue RestClient::Exception => e
-  abort "Wikidata query #{query.inspect} failed: #{e.message}"
-end
-
 morph_list = MembershipList::Morph.new(
   morph_scraper: morph_scraper,
   morph_sql_query: scraper_sql
@@ -40,7 +26,11 @@ morph_list = MembershipList::Morph.new(
 
 morph_records = morph_list.to_a.map { |d| [d[:id], d] }.to_h
 
-wikidata_records = wikidata_sparql("SELECT ?item ?itemLabel WHERE { ?item wdt:P39 wd:#{wikidata_membership_item}.  SERVICE wikibase:label { bd:serviceParam wikibase:language \"[AUTO_LANGUAGE],en\". } }")
+wikidata_list = MembershipList::Wikidata.new(
+  wikidata_membership_item: wikidata_membership_item
+)
+
+wikidata_records = wikidata_list.to_a.map { |h| [h[:item_id], h] }.to_h
 
 country_slug, house_slug = ep_country_and_house.split('/')
 popolo = Everypolitician::Index.new.country(country_slug).legislature(house_slug).popolo
