@@ -1,8 +1,9 @@
 require 'bundler/setup'
 require 'json'
-require 'uri'
 require 'rest-client'
 require 'everypolitician'
+
+require_relative 'lib/membership_list/morph'
 
 # FIXME: it's a bit awkward having so many positional command line
 # arguments: we might want to make them named options, or for the the
@@ -18,10 +19,6 @@ end
 ep_country_and_house, morph_scraper, ep_id_scheme, wikidata_membership_item, scraper_sql = ARGV
 scraper_sql ||= 'SELECT * FROM data'
 
-unless ENV['MORPH_API_KEY']
-  abort "You must set MORPH_API_KEY in the environment"
-end
-
 WIKIDATA_SPARQL_URL = 'https://query.wikidata.org/sparql'
 
 def wikidata_sparql(query)
@@ -36,13 +33,14 @@ rescue RestClient::Exception => e
   abort "Wikidata query #{query.inspect} failed: #{e.message}"
 end
 
-def morph_records(scraper, query)
-  url = "https://morph.io/#{scraper}/data.json?key=#{ENV['MORPH_API_KEY']}&query=#{URI.encode_www_form_component(query)}"
-  JSON.parse(RestClient.get(url), symbolize_names: true).map { |d| [d[:id], d]  }.to_h
-end
+morph_list = MembershipList::Morph.new(
+  morph_scraper: morph_scraper,
+  morph_sql_query: scraper_sql
+)
+
+morph_records = morph_list.to_a.map { |d| [d[:id], d] }.to_h
 
 wikidata_records = wikidata_sparql("SELECT ?item ?itemLabel WHERE { ?item wdt:P39 wd:#{wikidata_membership_item}.  SERVICE wikibase:label { bd:serviceParam wikibase:language \"[AUTO_LANGUAGE],en\". } }")
-morph_records = morph_records(morph_scraper, scraper_sql)
 
 country_slug, house_slug = ep_country_and_house.split('/')
 popolo = Everypolitician::Index.new.country(country_slug).legislature(house_slug).popolo
