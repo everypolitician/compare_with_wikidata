@@ -1,8 +1,9 @@
 require 'bundler/setup'
 require 'json'
-require 'uri'
-require 'rest-client'
-require 'everypolitician'
+
+require_relative 'lib/membership_list/morph'
+require_relative 'lib/membership_list/wikidata'
+require_relative 'lib/mapping/ep_identifier_to_wikidata'
 
 # FIXME: it's a bit awkward having so many positional command line
 # arguments: we might want to make them named options, or for the the
@@ -18,35 +19,25 @@ end
 ep_country_and_house, morph_scraper, ep_id_scheme, wikidata_membership_item, scraper_sql = ARGV
 scraper_sql ||= 'SELECT * FROM data'
 
-unless ENV['MORPH_API_KEY']
-  abort "You must set MORPH_API_KEY in the environment"
-end
+morph_list = MembershipList::Morph.new(
+  morph_scraper: morph_scraper,
+  morph_sql_query: scraper_sql
+)
 
-WIKIDATA_SPARQL_URL = 'https://query.wikidata.org/sparql'
+morph_records = morph_list.to_a.map { |d| [d[:id], d] }.to_h
 
-def wikidata_sparql(query)
-  result = RestClient.get WIKIDATA_SPARQL_URL, params: { query: query, format: 'json' }
-  json = JSON.parse(result, symbolize_names: true)
-  json[:results][:bindings].map do |res|
-    url = res[:item][:value]
-    item_id = url.split('/').last
-    [item_id, {url: url, name: res[:itemLabel][:value]}]
-  end.to_h
-rescue RestClient::Exception => e
-  abort "Wikidata query #{query.inspect} failed: #{e.message}"
-end
+wikidata_list = MembershipList::Wikidata.new(
+  wikidata_membership_item: wikidata_membership_item,
+  # FIXME: we will probably want to select this based on the country
+  # we're dealing with, but use English labels for the moment
+  label_language: 'en'
+)
 
-def morph_records(scraper, query)
-  url = "https://morph.io/#{scraper}/data.json?key=#{ENV['MORPH_API_KEY']}&query=#{URI.encode_www_form_component(query)}"
-  JSON.parse(RestClient.get(url), symbolize_names: true).map { |d| [d[:id], d]  }.to_h
-end
+wikidata_records = wikidata_list.to_a.map { |h| [h[:item_id], h] }.to_h
 
-wikidata_records = wikidata_sparql("SELECT ?item ?itemLabel WHERE { ?item wdt:P39 wd:#{wikidata_membership_item}.  SERVICE wikibase:label { bd:serviceParam wikibase:language \"[AUTO_LANGUAGE],en\". } }")
-morph_records = morph_records(morph_scraper, scraper_sql)
-
-country_slug, house_slug = ep_country_and_house.split('/')
-popolo = Everypolitician::Index.new.country(country_slug).legislature(house_slug).popolo
-morph_wikidata_lookup = popolo.persons.map { |p| [p.identifier(ep_id_scheme), p.wikidata] }.to_h
+morph_wikidata_lookup = Mapping::EPIdentifierToWikidata.new(
+  ep_slug: ep_country_and_house, ep_id_scheme: ep_id_scheme
+).to_h
 
 morph_ids_with_wikidata, morph_ids_without_wikidata = morph_records.keys.partition do |morph_id|
   morph_wikidata_lookup[morph_id]
