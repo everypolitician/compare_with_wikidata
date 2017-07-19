@@ -44,7 +44,7 @@ end
 country_slug, house_slug = ep_country_and_house.split('/')
 popolo = Everypolitician::Index.new.country(country_slug).legislature(house_slug).popolo
 
-house_wikidata_id = popolo.organizations.find { |o| o.classification == 'legislature' }.wikidata
+house_wikidata_id = popolo.organizations.find_by(classification: 'legislature').wikidata
 sparql = %(
 SELECT ?membership ?membershipLabel ?item ?itemLabel WHERE {
   # Find any memberships that are "part of" (P361) the house
