@@ -20,7 +20,8 @@ module CompareWithWikidata
         unless ENV['MORPH_API_KEY']
           raise 'You must set MORPH_API_KEY in the environment'
         end
-        @morph_url ||= "https://morph.io/#{morph_scraper}/data.json?key=#{ENV['MORPH_API_KEY']}&query=#{URI.encode_www_form_component(morph_sql_query)}"
+        @morph_url ||= "https://morph.io/#{morph_scraper}/data.json" \
+          "?key=#{ENV['MORPH_API_KEY']}&query=#{URI.encode_www_form_component(morph_sql_query)}"
       end
 
       def morph_json_data

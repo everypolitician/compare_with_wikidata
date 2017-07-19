@@ -41,8 +41,8 @@ module CompareWithWikidata
         item_id = url.split('/').last
         {
           item_id: item_id,
-          url: url,
-          name: sparql_result[:itemLabel][:value]
+          url:     url,
+          name:    sparql_result[:itemLabel][:value],
         }
       end
     end

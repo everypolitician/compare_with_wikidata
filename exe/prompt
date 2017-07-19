@@ -10,7 +10,8 @@ require 'compare_with_wikidata'
 
 if ARGV.length < 4 || ARGV.length > 5
   abort "Usage: #{$PROGRAM_NAME} EP_COUNTRY_AND_HOUSE MORPH_SCRAPER EP_ID_SCHEME WIKIDATA_MEMBERSHIP_ITEM [SCRAPER_SQL]
-e.g. prompt Nigeria/Senate everypolitician-scrapers/nigeria-national-assembly nass Q19822359 \"SELECT * FROM data WHERE js_position = 'Sen'\"
+e.g. prompt Nigeria/Senate everypolitician-scrapers/nigeria-national-assembly nass Q19822359 \\
+              \"SELECT * FROM data WHERE js_position = 'Sen'\"
 e.g. prompt United-States-of-America/House tmtmtmtm/us-congress-members bioguide Q13218630
 "
 end
@@ -19,7 +20,7 @@ ep_country_and_house, morph_scraper, ep_id_scheme, wikidata_membership_item, scr
 scraper_sql ||= 'SELECT * FROM data'
 
 morph_list = CompareWithWikidata::MembershipList::Morph.new(
-  morph_scraper: morph_scraper,
+  morph_scraper:   morph_scraper,
   morph_sql_query: scraper_sql
 )
 
@@ -29,7 +30,7 @@ wikidata_list = CompareWithWikidata::MembershipList::Wikidata.new(
   wikidata_membership_item: wikidata_membership_item,
   # FIXME: we will probably want to select this based on the country
   # we're dealing with, but use English labels for the moment
-  label_language: 'en'
+  label_language:           'en'
 )
 
 wikidata_records = wikidata_list.to_a.map { |h| [h[:item_id], h] }.to_h
