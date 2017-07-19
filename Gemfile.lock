@@ -1,3 +1,10 @@
+PATH
+  remote: .
+  specs:
+    compare_with_wikidata (0.1.0)
+      everypolitician (>= 0.20)
+      rest-client (~> 2.0)
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -15,11 +22,13 @@ GEM
     mime-types (3.1)
       mime-types-data (~> 3.2015)
     mime-types-data (3.2016.0521)
+    minitest (5.10.2)
     netrc (0.11.0)
     pry (0.10.4)
       coderay (~> 1.1.0)
       method_source (~> 0.8.1)
       slop (~> 3.4)
+    rake (10.5.0)
     require_all (1.4.0)
     rest-client (2.0.2)
       http-cookie (>= 1.0.2, < 2.0)
@@ -34,9 +43,11 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  everypolitician
-  pry
-  rest-client
+  bundler (~> 1.14)
+  compare_with_wikidata!
+  minitest (~> 5.0)
+  pry (~> 0.10)
+  rake (~> 10.0)
 
 BUNDLED WITH
    1.14.6

@@ -1,6 +1,4 @@
-# frozen_string_literal: true
 source 'https://rubygems.org'
 
-gem 'pry'
-gem 'rest-client'
-gem 'everypolitician'
+# Specify your gem's dependencies in compare_with_wikidata.gemspec
+gemspec
