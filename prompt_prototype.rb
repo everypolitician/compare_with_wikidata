@@ -27,7 +27,10 @@ morph_list = MembershipList::Morph.new(
 morph_records = morph_list.to_a.map { |d| [d[:id], d] }.to_h
 
 wikidata_list = MembershipList::Wikidata.new(
-  wikidata_membership_item: wikidata_membership_item
+  wikidata_membership_item: wikidata_membership_item,
+  # FIXME: we will probably want to select this based on the country
+  # we're dealing with, but use English labels for the moment
+  label_language: 'en'
 )
 
 wikidata_records = wikidata_list.to_a.map { |h| [h[:item_id], h] }.to_h
