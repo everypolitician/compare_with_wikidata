@@ -16,8 +16,8 @@ the moment, we expected it to produce three lists as follows:
 * {{Q|28600192}} 511 ALIMIKHENA ASEKHAME FRANCIS
 * {{Q|23765700}} 888 BASSEY ALBERT AKPAN
 == Records not in the Morph scraper, but in Wikidata ==
-* {{Q|339008}} Ahmed Makarfi
-* {{Q|378378}} Victor Ndoma-Egba
+* {{Q|339008}}
+* {{Q|378378}}
 == Records in the the Morph scraper not associated with a Wikidata item ==
 * 771 ABDULFATAI BUHARI
 * 944 Abdullahi Abubakar Gumel
