@@ -76,33 +76,72 @@ The script that rewrites the page would be invoked as:
 The syntax of the two template tags that must be in the page are
 as follows:
 
+## Mapping comes from EveryPolitician Popolo identifier
+
+This uses the identifier from EveryPolitician's Popolo JSON to map people
+from the scraper to Wikidata items.
+
     {{EveryPolitician comparison
     |sparql=<WIKIDATA-SPARQL-QUERY>
-    |everypolitician_slug=<EVERYPOLITICIAN-SLUG>
     |morph_scraper=<MORPH-SCRAPER>
-    |everypolitician_id_scheme=<EVERYPOLITICIAN-IDENTIFIER-SCHEME>
     |morph_sql=<MORPH-SQL-QUERY>
+    |everypolitician_slug=<EVERYPOLITICIAN-SLUG>
+    |everypolitician_id_scheme=<EVERYPOLITICIAN-IDENTIFIER-SCHEME>
     }}
 
     {{EveryPolitician comparison end}}
+
+## Mapping comes from Wikidata property
+
+This allows you to specify a Wikidata property that represents an external
+identifier which maps to the `id` column of the scraper.
+
+    {{EveryPolitician comparison
+    |sparql=<WIKIDATA-SPARQL-QUERY>
+    |morph_scraper=<MORPH-SCRAPER>
+    |morph_sql=<MORPH-SQL-QUERY>
+    |wikidata_identifier_property_id=<WIKIDATA-IDENTIFIER-PROPERTY-ID>
+    }}
+
+    {{EveryPolitician comparison end}}
+
+## No mapping, scraper contains Wikidata IDs
+
+This allows you to use a scraper which has a column containing a Wikidata ID.
+
+    {{EveryPolitician comparison
+    |sparql=<WIKIDATA-SPARQL-QUERY>
+    |morph_scraper=<MORPH-SCRAPER>
+    |morph_sql=<MORPH-SQL-QUERY>
+    |morph_wikidata_identifier_column=<MORPH-WIKIDATA-IDENTIFIER-COLUMN>
+    }}
+
+    {{EveryPolitician comparison end}}
+
 
 The meaning of those parameters is as follows:
 
 * **WIKIDATA-SPARQL-QUERY**: this query should find all the
   Wikidata items you want to compare, and have both both `?item`
   and `?itemLabel` in the `SELECT` clause.
+
+* **MORPH-SCRAPER**: This is the slug of the Morph scraper,
+  e.g. `tmtmtmtm/us-congress-members`
+* **MORPH-SQL-QUERY**: This is the SQL query that extracts the
+  membership data from the Morph scraper. If omitted, this
+  defaults to `SELECT * FROM data`.
+
 * **EVERYPOLITICIAN-SLUG**: This is the country and house
   slugs from EveryPolitician joined with a `/`. For example, for
   the House of Representatives in the USA, that would be
   `United-States-of-America/House`.
-* **MORPH-SCRAPER**: This is the slug of the Morph scraper,
-  e.g. `tmtmtmtm/us-congress-members`
 * **EVERYPOLITICIAN-IDENTIFIER-SCHEME**: This is the scheme of
   the identifier in EveryPolitician which corresponds to the
   `id` column of the Morph scraper.
-* **MORPH-SQL-QUERY**: This is the SQL query that extracts the
-  membership data from the Morph scraper. If omitted, this
-  defaults to `SELECT * FROM data`.
+
+* **WIKIDATA-IDENTIFIER-PROPERTY-ID**: The Wikidata property
+  representing an external identifier that maps to the `id`
+  column of the scraper.
 
 For example, to generate a comparison of Nigerian Senators
 between the EveryPolitician Morph scraper of the Nigerian
