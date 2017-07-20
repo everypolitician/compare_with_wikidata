@@ -32,16 +32,6 @@ TODO:
   that include these templates, as
   [Listeria](https://tools.wmflabs.org/listeria/) does, and
   process all of them in the same way.
-* At the moment you have to specify a SPARQL query, but it would
-  be good to have a default that finds people who are indicated
-  to be a representative of the house specified by
-  `everypolitician_slug` (and with a new `term` parameter) by
-  any of the means that term-specific memberships are
-  represented in Wikidata.
-* At the moment you have to specify a particular term by
-  restrictions in the `sparql` and `morph_sql` queries, but it
-  would be good to just specify a term ID - we haven't
-  completely thought through how best to do that yet.
 * We might want instead to have separate templates for the
   different types of discrepancy that this tool reports on
   (e.g. person in Morph not found in Wikidata, person in
