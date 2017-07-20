@@ -1,7 +1,7 @@
 require 'test_helper'
 
-class CompareWithWikidataTest < Minitest::Test
-  def test_that_it_has_a_version_number
-    refute_nil ::CompareWithWikidata::VERSION
+describe 'CompareWithWikidata' do
+  it 'has a version number' do
+    ::CompareWithWikidata::VERSION.wont_be_nil
   end
 end
