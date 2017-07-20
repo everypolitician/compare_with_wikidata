@@ -12,7 +12,7 @@ The output of this tool will be improved in the future, but at
 the moment, we expected it to produce three lists as follows:
 
 ```mediawiki
-== Records missing a {{P|39}} of {{Q|19822359}} ==
+== Records matched to Wikidata but not returned by SPARQL query ==
 * {{Q|25753711}} 849 ABUBAKAR KYARI
 * {{Q|28600192}} 511 ALIMIKHENA ASEKHAME FRANCIS
 * {{Q|23765700}} 888 BASSEY ALBERT AKPAN
