@@ -112,7 +112,7 @@ This allows you to use a scraper which has a column containing a Wikidata ID.
 The meaning of the parameters above is as follows:
 
 * **WIKIDATA-SPARQL-QUERY**: this query should find all the
-  Wikidata items you want to compare, and have both both `?item`
+  Wikidata items you want to compare, and have both `?item`
   and `?itemLabel` in the `SELECT` clause.
 
 * **MORPH-SCRAPER**: This is the slug of the Morph scraper,
