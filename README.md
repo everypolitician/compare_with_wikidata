@@ -75,7 +75,7 @@ The script that rewrites the page would be invoked as:
 The syntax of the two template tags that must be in the page are
 as follows:
 
-## Mapping comes from EveryPolitician Popolo identifier
+### Mapping comes from EveryPolitician Popolo identifier
 
 This uses the identifier from EveryPolitician's Popolo JSON to map people
 from the scraper to Wikidata items.
@@ -90,7 +90,7 @@ from the scraper to Wikidata items.
 
     {{Politician scraper comparison end}}
 
-## Mapping comes from Wikidata property
+### Mapping comes from Wikidata property
 
 This allows you to specify a Wikidata property that represents an external
 identifier which maps to the `id` column of the scraper.
@@ -104,7 +104,7 @@ identifier which maps to the `id` column of the scraper.
 
     {{Politician scraper comparison end}}
 
-## No mapping, scraper contains Wikidata IDs
+### No mapping, scraper contains Wikidata IDs
 
 This allows you to use a scraper which has a column containing a Wikidata ID.
 
@@ -117,8 +117,9 @@ This allows you to use a scraper which has a column containing a Wikidata ID.
 
     {{Politician scraper comparison end}}
 
+### Template parameters
 
-The meaning of those parameters is as follows:
+The meaning of the parameters above is as follows:
 
 * **WIKIDATA-SPARQL-QUERY**: this query should find all the
   Wikidata items you want to compare, and have both both `?item`
