@@ -18,6 +18,7 @@ end
 
 ep_country_and_house, morph_scraper, ep_id_scheme, wikidata_membership_item, scraper_sql = ARGV
 scraper_sql ||= 'SELECT * FROM data'
+output_formatter = ENV.fetch('PROMPT_OUTPUT_FORMATTER', 'text')
 
 morph_list = CompareWithWikidata::MembershipList::Morph.new(
   morph_scraper:   morph_scraper,
@@ -43,26 +44,53 @@ morph_ids_with_wikidata, morph_ids_without_wikidata = morph_records.keys.partiti
   morph_wikidata_lookup[morph_id]
 end
 
-wikidate_ids_from_morph = morph_ids_with_wikidata.map { |morph_id| morph_wikidata_lookup[morph_id] }
-
-not_in_wikidata = wikidate_ids_from_morph - wikidata_records.keys
-not_in_morph = wikidata_records.keys - wikidate_ids_from_morph
-
-puts "Records missing a P39 (position_held) of #{wikidata_membership_item}:"
+wikidata_ids_from_morph = morph_ids_with_wikidata.map { |morph_id| morph_wikidata_lookup[morph_id] }
 wikidata_item_to_morph_id = morph_wikidata_lookup.to_a.map(&:reverse).to_h
-not_in_wikidata.each do |item_id|
-  morph_record = morph_records[wikidata_item_to_morph_id[item_id]]
-  puts "  #{item_id} #{morph_record[:id]} #{morph_record[:name]}"
-end
 
-puts 'Records not in the Morph scraper, but in Wikidata:'
-not_in_morph.each do |item_id|
-  wikidata_record = wikidata_records[item_id]
-  puts "  #{item_id} #{wikidata_record[:url]} #{wikidata_record[:name]}"
-end
+not_in_wikidata = wikidata_ids_from_morph - wikidata_records.keys
+not_in_morph = wikidata_records.keys - wikidata_ids_from_morph
 
-puts 'Records in the the Morph scraper not associated with a Wikidata item:'
-morph_ids_without_wikidata.each do |morph_id|
-  morph_record = morph_records[morph_id]
-  puts "  #{morph_id} #{morph_record[:name]}"
+if output_formatter == 'text'
+  puts "Records missing a P39 (position_held) of #{wikidata_membership_item}:"
+  not_in_wikidata.each do |item_id|
+    morph_record = morph_records[wikidata_item_to_morph_id[item_id]]
+    puts "  #{item_id} #{morph_record[:id]} #{morph_record[:name]}"
+  end
+
+  puts 'Records not in the Morph scraper, but in Wikidata:'
+  not_in_morph.each do |item_id|
+    wikidata_record = wikidata_records[item_id]
+    puts "  #{item_id} #{wikidata_record[:url]} #{wikidata_record[:name]}"
+  end
+
+  puts 'Records in the the Morph scraper not associated with a Wikidata item:'
+  morph_ids_without_wikidata.each do |morph_id|
+    morph_record = morph_records[morph_id]
+    puts "  #{morph_id} #{morph_record[:name]}"
+  end
+elsif output_formatter == 'mediawiki'
+  puts "SPARQL query used for this comparison:"
+  puts "{{sparql|query=#{wikidata_list.sparql_query}}}"
+  puts '== Records matched to Wikidata but not returned by SPARQL query =='
+
+  not_in_wikidata.each do |item_id|
+    morph_record = morph_records[wikidata_item_to_morph_id[item_id]]
+    puts "* {{Q|#{item_id}}} #{morph_record[:id]} #{morph_record[:name]}"
+  end
+
+  puts '== Records not in the Morph scraper, but in Wikidata =='
+
+  not_in_morph.each do |item_id|
+    wikidata_record = wikidata_records[item_id]
+    puts "* {{Q|#{item_id}}}"
+  end
+
+  puts '== Records in the the Morph scraper not associated with a Wikidata item =='
+
+  morph_ids_without_wikidata.each do |morph_id|
+    morph_record = morph_records[morph_id]
+    puts "* #{morph_id} #{morph_record[:name]}"
+  end
+else
+  abort "Unknown output formatter: #{output_formatter.inspect}"
 end
