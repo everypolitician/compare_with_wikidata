@@ -44,12 +44,12 @@ morph_ids_with_wikidata, morph_ids_without_wikidata = morph_records.keys.partiti
 end
 
 wikidata_ids_from_morph = morph_ids_with_wikidata.map { |morph_id| morph_wikidata_lookup[morph_id] }
+wikidata_item_to_morph_id = morph_wikidata_lookup.to_a.map(&:reverse).to_h
 
 not_in_wikidata = wikidata_ids_from_morph - wikidata_records.keys
 not_in_morph = wikidata_records.keys - wikidata_ids_from_morph
 
 puts "Records missing a P39 (position_held) of #{wikidata_membership_item}:"
-wikidata_item_to_morph_id = morph_wikidata_lookup.to_a.map(&:reverse).to_h
 not_in_wikidata.each do |item_id|
   morph_record = morph_records[wikidata_item_to_morph_id[item_id]]
   puts "  #{item_id} #{morph_record[:id]} #{morph_record[:name]}"
