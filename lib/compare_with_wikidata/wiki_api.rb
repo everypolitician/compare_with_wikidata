@@ -13,6 +13,18 @@ module CompareWithWikidata
       @wikitext ||= client.get_wikitext(title).body
     end
 
+    def template_sections
+      section_re = /
+        \{\{Politician\ scraper\ comparison
+        .*?
+        <!--\ COMPARISON\ OUTPUT\ BEGIN\ -->
+        .*?
+        <!--\ COMPARISON\ OUTPUT\ END\ -->/xm
+      wikitext.scan(section_re).map do |matched_text|
+        TemplateSection.new(matched_text)
+      end
+    end
+
     private
 
     attr_accessor :username, :password, :title, :client_class
