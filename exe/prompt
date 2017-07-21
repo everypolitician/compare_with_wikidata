@@ -81,18 +81,22 @@ elsif output_formatter == 'mediawiki'
   puts scraper_sql
   puts '</syntaxhighlight>'
 
-  puts '== Records matched to Wikidata but not returned by SPARQL query =='
+  puts '== Items in external source but not returned by SPARQL query =='
 
-  if not_in_wikidata.any?
+  if not_in_wikidata.any? || morph_ids_without_wikidata.any?
     not_in_wikidata.each do |item_id|
       morph_record = morph_records[wikidata_item_to_morph_id[item_id]]
-      puts "* {{Q|#{item_id}}} #{morph_record[:id]} #{morph_record[:name]}"
+      puts "* #{morph_record[:name]} (#{morph_record[:id]}) Wikidata item: {{Q|#{item_id}}}"
+    end
+    morph_ids_without_wikidata.each do |morph_id|
+      morph_record = morph_records[morph_id]
+      puts "* #{morph_record[:name]} (#{morph_record[:id]})"
     end
   else
     puts 'None'
   end
 
-  puts '== Records not in the Morph scraper, but in Wikidata =='
+  puts '== Items returned by SPARQL query but not found in external source =='
 
   if not_in_morph.any?
     not_in_morph.each do |item_id|
@@ -100,17 +104,6 @@ elsif output_formatter == 'mediawiki'
     end
   else
     puts 'None'
-  end
-
-  puts '== Records in the the Morph scraper not associated with a Wikidata item =='
-
-  if morph_ids_without_wikidata.any?
-    morph_ids_without_wikidata.each do |morph_id|
-      morph_record = morph_records[morph_id]
-      puts "* #{morph_id} #{morph_record[:name]}"
-    end
-  else
-    puts "None"
   end
 else
   abort "Unknown output formatter: #{output_formatter.inspect}"
