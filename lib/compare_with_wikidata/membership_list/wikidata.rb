@@ -16,10 +16,6 @@ module CompareWithWikidata
         )[:results][:bindings].map { |r| sparql_result_to_hash(r) }
       end
 
-      private
-
-      attr_reader :wikidata_membership_item, :label_language
-
       def sparql_query
         @sparql_query ||= "
           SELECT ?item ?itemLabel
@@ -29,6 +25,10 @@ module CompareWithWikidata
             }
   "
       end
+
+      private
+
+      attr_reader :wikidata_membership_item, :label_language
 
       def sparql_response
         @sparql_response ||= RestClient.get WIKIDATA_SPARQL_URL, params: { query: sparql_query, format: 'json' }
