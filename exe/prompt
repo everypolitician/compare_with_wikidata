@@ -73,7 +73,7 @@ if output_formatter == 'text'
   end
 elsif output_formatter == 'mediawiki'
   puts 'SPARQL query used for this comparison:'
-  puts "{{sparql|query=#{wikidata_list.sparql_query}}}"
+  puts "{{sparql|query=#{wikidata_list.sparql_query}\n}}"
   puts '== Records matched to Wikidata but not returned by SPARQL query =='
 
   not_in_wikidata.each do |item_id|
