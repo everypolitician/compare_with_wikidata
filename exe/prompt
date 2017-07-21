@@ -51,7 +51,7 @@ not_in_wikidata = wikidata_ids_from_morph - wikidata_records.keys
 not_in_morph = wikidata_records.keys - wikidata_ids_from_morph
 
 if output_formatter == 'text'
-  puts "Records missing a P39 (position_held) of #{wikidata_membership_item}:"
+  puts 'Records matched to Wikidata but not returned by SPARQL query'
   not_in_wikidata.each do |item_id|
     morph_record = morph_records[wikidata_item_to_morph_id[item_id]]
     puts "  #{item_id} #{morph_record[:id]} #{morph_record[:name]}"
@@ -69,7 +69,7 @@ if output_formatter == 'text'
     puts "  #{morph_id} #{morph_record[:name]}"
   end
 elsif output_formatter == 'mediawiki'
-  puts "SPARQL query used for this comparison:"
+  puts 'SPARQL query used for this comparison:'
   puts "{{sparql|query=#{wikidata_list.sparql_query}}}"
   puts '== Records matched to Wikidata but not returned by SPARQL query =='
 
@@ -81,7 +81,6 @@ elsif output_formatter == 'mediawiki'
   puts '== Records not in the Morph scraper, but in Wikidata =='
 
   not_in_morph.each do |item_id|
-    wikidata_record = wikidata_records[item_id]
     puts "* {{Q|#{item_id}}}"
   end
 
