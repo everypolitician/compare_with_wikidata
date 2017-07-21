@@ -9,14 +9,22 @@ require 'compare_with_wikidata'
 # command to take a configuration file specifying them instead.
 
 if ARGV.length < 4 || ARGV.length > 5
-  abort "Usage: #{$PROGRAM_NAME} EP_COUNTRY_AND_HOUSE MORPH_SCRAPER EP_ID_SCHEME WIKIDATA_MEMBERSHIP_ITEM [SCRAPER_SQL]
-e.g. prompt Nigeria/Senate everypolitician-scrapers/nigeria-national-assembly nass Q19822359 \\
+  abort "Usage: #{$PROGRAM_NAME} EP_COUNTRY_AND_HOUSE MORPH_SCRAPER EP_ID_SCHEME SPARQL_QUERY [SCRAPER_SQL]
+e.g. prompt Nigeria/Senate everypolitician-scrapers/nigeria-national-assembly nass \\
+              \'SELECT ?item ?itemLabel WHERE {
+                ?item wdt:P39 wd:Q19822359.
+                  SERVICE wikibase:label { bd:serviceParam wikibase:language \"en\". }
+                }' \\
               \"SELECT * FROM data WHERE js_position = 'Sen'\"
-e.g. prompt United-States-of-America/House tmtmtmtm/us-congress-members bioguide Q13218630
+e.g. prompt United-States-of-America/House tmtmtmtm/us-congress-members bioguide \\
+              \'SELECT ?item ?itemLabel WHERE {
+                ?item wdt:P39 wd:Q13218630.
+                  SERVICE wikibase:label { bd:serviceParam wikibase:language \"en\". }
+                }'
 "
 end
 
-ep_country_and_house, morph_scraper, ep_id_scheme, wikidata_membership_item, scraper_sql = ARGV
+ep_country_and_house, morph_scraper, ep_id_scheme, sparql_query, scraper_sql = ARGV
 scraper_sql ||= 'SELECT * FROM data'
 output_formatter = ENV.fetch('PROMPT_OUTPUT_FORMATTER', 'text')
 
@@ -27,12 +35,7 @@ morph_list = CompareWithWikidata::MembershipList::Morph.new(
 
 morph_records = morph_list.to_a.map { |d| [d[:id], d] }.to_h
 
-wikidata_list = CompareWithWikidata::MembershipList::Wikidata.new(
-  wikidata_membership_item: wikidata_membership_item,
-  # FIXME: we will probably want to select this based on the country
-  # we're dealing with, but use English labels for the moment
-  label_language:           'en'
-)
+wikidata_list = CompareWithWikidata::MembershipList::Wikidata.new(sparql_query: sparql_query)
 
 wikidata_records = wikidata_list.to_a.map { |h| [h[:item_id], h] }.to_h
 
