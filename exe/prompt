@@ -68,5 +68,29 @@ if output_formatter == 'text'
     morph_record = morph_records[morph_id]
     puts "  #{morph_id} #{morph_record[:name]}"
   end
+elsif output_formatter == 'mediawiki'
+  puts "SPARQL query used for this comparison:"
+  puts "{{sparql|query=#{wikidata_list.sparql_query}}}"
+  puts '== Records matched to Wikidata but not returned by SPARQL query =='
 
+  not_in_wikidata.each do |item_id|
+    morph_record = morph_records[wikidata_item_to_morph_id[item_id]]
+    puts "* {{Q|#{item_id}}} #{morph_record[:id]} #{morph_record[:name]}"
+  end
+
+  puts '== Records not in the Morph scraper, but in Wikidata =='
+
+  not_in_morph.each do |item_id|
+    wikidata_record = wikidata_records[item_id]
+    puts "* {{Q|#{item_id}}}"
+  end
+
+  puts '== Records in the the Morph scraper not associated with a Wikidata item =='
+
+  morph_ids_without_wikidata.each do |morph_id|
+    morph_record = morph_records[morph_id]
+    puts "* #{morph_id} #{morph_record[:name]}"
+  end
+else
+  abort "Unknown output formatter: #{output_formatter.inspect}"
 end
