@@ -40,6 +40,8 @@ module CompareWithWikidata
         (?<content_end><!--\ [\w\ ]*OUTPUT\ END\ -->)
     /xm
 
+    TEMPLATE_RE_NO_GROUPS = Regexp.new(TEMPLATE_RE.to_s.gsub(/\?<\w+>/, '?:'))
+
     def top_level_split
       @top_level_split ||= TEMPLATE_RE.match(original_wikitext)
     end

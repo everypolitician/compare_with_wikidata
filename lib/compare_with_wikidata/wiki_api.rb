@@ -13,16 +13,25 @@ module CompareWithWikidata
       @wikitext ||= client.get_wikitext(title).body
     end
 
-    def template_sections
-      section_re = /
-        \{\{Politician\ scraper\ comparison
-        .*?
-        <!--\ COMPARISON\ OUTPUT\ BEGIN\ -->
-        .*?
-        <!--\ COMPARISON\ OUTPUT\ END\ -->/xm
-      wikitext.scan(section_re).map do |matched_text|
-        TemplateSection.new(original_wikitext: matched_text)
+    def reassemble_page(new_template_sections)
+      unless new_template_sections.length == template_sections.length
+        raise 'When reassembling a page, you must supply the same number ' \
+              'of template sections as there were originally ' \
+              "(#{template_sections})"
       end
+      non_template_sections.zip(
+        new_template_sections.map(&:original_wikitext)
+      ).flatten.join('')
+    end
+
+    def template_sections
+      @template_sections ||= wikitext.scan(TemplateSection::TEMPLATE_RE_NO_GROUPS).map do |s|
+        TemplateSection.new(original_wikitext: s)
+      end
+    end
+
+    def non_template_sections
+      @non_template_sections ||= wikitext.split(TemplateSection::TEMPLATE_RE_NO_GROUPS)
     end
 
     private

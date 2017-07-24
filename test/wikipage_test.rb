@@ -82,4 +82,25 @@ describe 'WikiPage' do
 <!-- COMPARISON OUTPUT END -->'
     )
   end
+
+  it 'can be reassembled with replacement template sections' do
+    wiki_page.reassemble_page(
+      [
+        CompareWithWikidata::TemplateSection.new(original_wikitext: 'FIRST!'),
+        CompareWithWikidata::TemplateSection.new(original_wikitext: 'Second.'),
+      ]
+    ).must_equal(
+      'Hi, here is some introductory text.
+
+Now let\'s have a recognized template:
+
+FIRST!
+
+And some other text here before a new template:
+
+Second.
+
+Now some trailing text.'
+    )
+  end
 end
