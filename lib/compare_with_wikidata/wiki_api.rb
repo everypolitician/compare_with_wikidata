@@ -21,7 +21,7 @@ module CompareWithWikidata
         .*?
         <!--\ COMPARISON\ OUTPUT\ END\ -->/xm
       wikitext.scan(section_re).map do |matched_text|
-        TemplateSection.new(matched_text)
+        TemplateSection.new(original_wikitext: matched_text)
       end
     end
 
