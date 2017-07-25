@@ -41,6 +41,17 @@ module CompareWithWikidata
       reassemble_page(rewritten_template_sections)
     end
 
+    def rewrite_and_put(rewriter)
+      new_wikitext = rewrite(rewriter)
+      if new_wikitext == wikitext
+        STDERR.puts("Warning: after rewriting, the content of #{title} remained the same")
+        self
+      else
+        client.edit(title: title, text: new_wikitext)
+        self.class.new(username: username, password: password, title: title, client_class: client_class)
+      end
+    end
+
     private
 
     attr_accessor :username, :password, :title, :client_class
