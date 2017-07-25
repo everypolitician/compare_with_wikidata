@@ -34,6 +34,13 @@ module CompareWithWikidata
       @non_template_sections ||= wikitext.split(TemplateSection::TEMPLATE_RE_NO_GROUPS)
     end
 
+    def rewrite(rewriter)
+      rewritten_template_sections = template_sections.map do |template_section|
+        template_section.rewrite(rewriter)
+      end
+      reassemble_page(rewritten_template_sections)
+    end
+
     private
 
     attr_accessor :username, :password, :title, :client_class
