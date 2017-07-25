@@ -17,7 +17,7 @@ Now let\'s have a recognized template:
 }}
 
 <!-- COMPARISON OUTPUT BEGIN -->
-
+Old content of the first section.
 <!-- COMPARISON OUTPUT END -->
 
 And some other text here before a new template:
@@ -28,7 +28,7 @@ And some other text here before a new template:
 }}
 
 <!-- COMPARISON OUTPUT BEGIN -->
-
+Old content of the second section.
 <!-- COMPARISON OUTPUT END -->
 
 Now some trailing text.'.freeze
@@ -65,7 +65,7 @@ describe 'WikiPage' do
 }}
 
 <!-- COMPARISON OUTPUT BEGIN -->
-
+Old content of the first section.
 <!-- COMPARISON OUTPUT END -->'
     )
   end
@@ -78,7 +78,7 @@ describe 'WikiPage' do
 }}
 
 <!-- COMPARISON OUTPUT BEGIN -->
-
+Old content of the second section.
 <!-- COMPARISON OUTPUT END -->'
     )
   end
