@@ -5,9 +5,10 @@ module CompareWithWikidata
     class Wikidata
       WIKIDATA_SPARQL_URL = 'https://query.wikidata.org/sparql'.freeze
 
-      def initialize(wikidata_membership_item:, label_language:)
-        @wikidata_membership_item = wikidata_membership_item
-        @label_language = label_language
+      attr_reader :sparql_query
+
+      def initialize(sparql_query:)
+        @sparql_query = sparql_query
       end
 
       def to_a
@@ -16,24 +17,12 @@ module CompareWithWikidata
         )[:results][:bindings].map { |r| sparql_result_to_hash(r) }
       end
 
-      def sparql_query
-        @sparql_query ||= "
-          SELECT ?item ?itemLabel
-            WHERE {
-              ?item wdt:P39 wd:#{wikidata_membership_item}.
-              SERVICE wikibase:label { bd:serviceParam wikibase:language \"#{label_language}\". }
-            }
-  "
-      end
-
       private
-
-      attr_reader :wikidata_membership_item, :label_language
 
       def sparql_response
         @sparql_response ||= RestClient.get WIKIDATA_SPARQL_URL, params: { query: sparql_query, format: 'json' }
       rescue RestClient::Exception => e
-        raise "Wikidata query #{query.inspect} failed: #{e.message}"
+        raise "Wikidata query #{sparql_query.inspect} failed: #{e.message}"
       end
 
       def sparql_result_to_hash(sparql_result)
