@@ -21,4 +21,24 @@ describe 'TemplateSection' do
   it 'returns the template name' do
     template_section.template_name.must_equal('Politician scraper comparison')
   end
+
+  it 'can be rewritten' do
+    class TestRewriter
+      def rewrite(parameters:, **)
+        "The output is now #{parameters[:foo]}"
+      end
+    end
+    rewritten = template_section.rewrite(TestRewriter.new)
+    rewritten.original_wikitext.must_equal(
+      '{{Politician scraper comparison
+|foo=43
+|bar=Woolly Mountain Tapir
+}}
+
+<!-- COMPARISON OUTPUT BEGIN -->
+The output is now 43
+<!-- COMPARISON OUTPUT END -->'
+    )
+    rewritten.original_wikitext.wont_equal(template_section.original_wikitext)
+  end
 end
