@@ -103,4 +103,48 @@ Second.
 Now some trailing text.'
     )
   end
+
+  it 'can be rewritten with a "rewriter" object' do
+    class TestRewriter
+      def rewrite(old_content:, parameters:)
+        "Preserving the old content:\n#{old_content}\n" \
+        "In this template, foo is '#{parameters[:foo]}' and quux is '#{parameters[:quux]}'"
+      end
+    end
+    wiki_page.rewrite(TestRewriter.new).must_equal(
+      'Hi, here is some introductory text.
+
+Now let\'s have a recognized template:
+
+{{Politician scraper comparison
+|foo=43
+|bar=Woolly Mountain Tapir
+}}
+
+<!-- COMPARISON OUTPUT BEGIN -->
+Preserving the old content:
+
+Old content of the first section.
+
+In this template, foo is \'43\' and quux is \'\'
+<!-- COMPARISON OUTPUT END -->
+
+And some other text here before a new template:
+
+{{Politician scraper comparison
+|quux=13
+|bar=Horse
+}}
+
+<!-- COMPARISON OUTPUT BEGIN -->
+Preserving the old content:
+
+Old content of the second section.
+
+In this template, foo is \'\' and quux is \'13\'
+<!-- COMPARISON OUTPUT END -->
+
+Now some trailing text.'
+    )
+  end
 end
