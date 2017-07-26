@@ -28,3 +28,8 @@ highlighter = Daff::TableDiff.new(alignment, flags)
 highlighter.hilite(table_diff)
 
 p data_diff
+
+__END__
+
+$ ruby experiments/daff.rb
+[["!", "", "+++", ""], ["@@", "Country", "Code", "Capital"], ["+", "Ireland", "ie", "Dublin"], ["+", "France", "fr", "Paris"], ["->", "Spain", "es", "Barcelona->Madrid"], ["+++", "Germany", "de", "Berlin"]]
