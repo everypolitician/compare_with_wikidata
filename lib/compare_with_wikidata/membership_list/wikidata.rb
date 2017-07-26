@@ -12,27 +12,15 @@ module CompareWithWikidata
       end
 
       def to_a
-        @to_a ||= JSON.parse(
-          sparql_response, symbolize_names: true
-        )[:results][:bindings].map { |r| sparql_result_to_hash(r) }
+        @to_a ||= CSV.parse(sparql_response.to_s)
       end
 
       private
 
       def sparql_response
-        @sparql_response ||= RestClient.get WIKIDATA_SPARQL_URL, params: { query: sparql_query, format: 'json' }
+        @sparql_response ||= RestClient.get WIKIDATA_SPARQL_URL, params: { query: sparql_query }, accept: 'text/csv'
       rescue RestClient::Exception => e
         raise "Wikidata query #{sparql_query.inspect} failed: #{e.message}"
-      end
-
-      def sparql_result_to_hash(sparql_result)
-        url = sparql_result[:item][:value]
-        item_id = url.split('/').last
-        {
-          item_id: item_id,
-          url:     url,
-          name:    sparql_result[:itemLabel][:value],
-        }
       end
     end
   end
