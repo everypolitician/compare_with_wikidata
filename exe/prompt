@@ -1,98 +1,88 @@
 #!/usr/bin/env ruby
 require 'bundler/setup'
 require 'json'
+require 'daff'
+require 'csv'
 
 require 'compare_with_wikidata'
 
-# FIXME: it's a bit awkward having so many positional command line
-# arguments: we might want to make them named options, or for the the
-# command to take a configuration file specifying them instead.
+def daff_diff(data1, data2)
+  t1 = Daff::TableView.new(data1)
+  t2 = Daff::TableView.new(data2)
 
-if ARGV.length < 4 || ARGV.length > 5
-  abort "Usage: #{$PROGRAM_NAME} EP_COUNTRY_AND_HOUSE MORPH_SCRAPER EP_ID_SCHEME SPARQL_QUERY [SCRAPER_SQL]
-e.g. prompt Nigeria/Senate everypolitician-scrapers/nigeria-national-assembly nass \\
-              \'SELECT ?item ?itemLabel WHERE {
-                ?item wdt:P39 wd:Q19822359.
-                  SERVICE wikibase:label { bd:serviceParam wikibase:language \"en\". }
-                }' \\
-              \"SELECT * FROM data WHERE js_position = 'Sen'\"
-e.g. prompt United-States-of-America/House tmtmtmtm/us-congress-members bioguide \\
-              \'SELECT ?item ?itemLabel WHERE {
-                ?item wdt:P39 wd:Q13218630.
-                  SERVICE wikibase:label { bd:serviceParam wikibase:language \"en\". }
-                }'
+  alignment = Daff::Coopy.compare_tables(t1, t2).align
+
+  data_diff = []
+  table_diff = Daff::TableView.new(data_diff)
+
+  flags = Daff::CompareFlags.new
+  # We don't want any context in the resulting diff
+  flags.unchanged_context = 0
+  highlighter = Daff::TableDiff.new(alignment, flags)
+  highlighter.hilite(table_diff)
+
+  data_diff
+end
+
+def csv_from_url(file_or_url)
+  if File.exist?(file_or_url)
+    CSV.read(file_or_url)
+  else
+    CSV.parse(RestClient.get(file_or_url).to_s)
+  end
+end
+
+if ARGV.size != 2
+  abort "Usage: #{$PROGRAM_NAME} SPARQL_QUERY CSV_FILE_OR_URL
+e.g. prompt 'SELECT (STRAFTER(STR(?item), STR(wd:)) AS ?id) (STRAFTER(STR(?officeholder), STR(wd:)) AS ?holder_id)
+  WHERE {
+    ?item wdt:P31 wd:Q6256 .
+    OPTIONAL {
+      ?item wdt:P1313 ?office .
+      OPTIONAL { ?office wdt:P1308 ?officeholder . }
+    }
+  }
+ORDER BY ?id' \\
+https://gist.githubusercontent.com/chrismytton/ddb3974b056f92051370a28b27168bbe/raw/4d2286134a6f8a9a47fbeb546069535eff589ca3/heads-of-government-morph.csv
 "
 end
 
-ep_country_and_house, morph_scraper, ep_id_scheme, sparql_query, scraper_sql = ARGV
-scraper_sql ||= 'SELECT * FROM data'
+sparql_query, csv_file_or_url = ARGV
 output_formatter = ENV.fetch('PROMPT_OUTPUT_FORMATTER', 'text')
 
-morph_list = CompareWithWikidata::MembershipList::Morph.new(
-  morph_scraper:   morph_scraper,
-  morph_sql_query: scraper_sql
-)
+wikidata_records = CompareWithWikidata::MembershipList::Wikidata.new(sparql_query: sparql_query).to_a
 
-morph_records = morph_list.to_a.map { |d| [d[:id], d] }.to_h
+external_csv = csv_from_url(csv_file_or_url)
 
-wikidata_list = CompareWithWikidata::MembershipList::Wikidata.new(sparql_query: sparql_query)
-
-wikidata_records = wikidata_list.to_a.map { |h| [h[:item_id], h] }.to_h
-
-morph_wikidata_lookup = CompareWithWikidata::Mapping::EPIdentifierToWikidata.new(
-  ep_slug: ep_country_and_house, ep_id_scheme: ep_id_scheme
-).to_h
-
-morph_ids_with_wikidata, morph_ids_without_wikidata = morph_records.keys.partition do |morph_id|
-  morph_wikidata_lookup[morph_id]
-end
-
-wikidata_ids_from_morph = morph_ids_with_wikidata.map { |morph_id| morph_wikidata_lookup[morph_id] }
-wikidata_item_to_morph_id = morph_wikidata_lookup.to_a.map(&:reverse).to_h
-
-not_in_wikidata = wikidata_ids_from_morph - wikidata_records.keys
-not_in_morph = wikidata_records.keys - wikidata_ids_from_morph
+diff = daff_diff(wikidata_records, external_csv)
 
 if output_formatter == 'text'
-  puts 'Records matched to Wikidata but not returned by SPARQL query'
-  not_in_wikidata.each do |item_id|
-    morph_record = morph_records[wikidata_item_to_morph_id[item_id]]
-    puts "  #{item_id} #{morph_record[:id]} #{morph_record[:name]}"
-  end
-
-  puts 'Records not in the Morph scraper, but in Wikidata:'
-  not_in_morph.each do |item_id|
-    wikidata_record = wikidata_records[item_id]
-    puts "  #{item_id} #{wikidata_record[:url]} #{wikidata_record[:name]}"
-  end
-
-  puts 'Records in the the Morph scraper not associated with a Wikidata item:'
-  morph_ids_without_wikidata.each do |morph_id|
-    morph_record = morph_records[morph_id]
-    puts "  #{morph_id} #{morph_record[:name]}"
+  CSV do |csv|
+    diff.each { |row| csv << row }
   end
 elsif output_formatter == 'mediawiki'
-  puts 'SPARQL query used for this comparison:'
-  puts "{{sparql|query=#{wikidata_list.sparql_query}}}"
-  puts '== Records matched to Wikidata but not returned by SPARQL query =='
+  puts '== SPARQL query =='
+  # MediaWiki interprets | as part of a template, so escape pipes in SPARQL query.
+  puts "{{sparql|query=#{sparql_query.gsub('|', '{{!}}')}\n}}"
 
-  not_in_wikidata.each do |item_id|
-    morph_record = morph_records[wikidata_item_to_morph_id[item_id]]
-    puts "* {{Q|#{item_id}}} #{morph_record[:id]} #{morph_record[:name]}"
+  puts '== External source =='
+  puts "#{csv_file_or_url}\n\n"
+
+  puts '== Comparison =='
+
+  puts '{|class="wikitable"'
+  headers, *rows = diff
+  headers.each do |header|
+    puts "| #{header}"
   end
 
-  puts '== Records not in the Morph scraper, but in Wikidata =='
+  puts '|-'
 
-  not_in_morph.each do |item_id|
-    puts "* {{Q|#{item_id}}}"
+  rows.each do |row|
+    row.each do |item|
+      puts "| #{item.to_s.gsub(/Q(\d+)/, '{{Q|\\1}}').gsub('->', ' &rarr; ')}"
+    end
+    puts '|-'
   end
-
-  puts '== Records in the the Morph scraper not associated with a Wikidata item =='
-
-  morph_ids_without_wikidata.each do |morph_id|
-    morph_record = morph_records[morph_id]
-    puts "* #{morph_id} #{morph_record[:name]}"
-  end
-else
-  abort "Unknown output formatter: #{output_formatter.inspect}"
+  puts '|}'
 end
