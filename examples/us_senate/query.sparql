@@ -1,0 +1,14 @@
+SELECT DISTINCT ?id (STRAFTER(STR(?item), STR(wd:)) AS ?wikidata_id)
+WHERE {
+  ?item p:P39 ?mem .
+  ?mem ps:P39 wd:Q13217683 .
+  OPTIONAL { ?item wdt:P1157 ?id }
+  OPTIONAL { ?mem pq:P580 ?startDate }
+  OPTIONAL { ?mem pq:P582 ?endDate }
+  FILTER (
+    (BOUND(?startDate) && (?startDate >= "2017-01-03T00:00:00Z"^^xsd:dateTime)) ||
+    (BOUND(?endDate) && (?endDate > "2017-01-03T00:00:00Z"^^xsd:dateTime)) ||
+    (BOUND(?startDate) && !BOUND(?endDate))
+  ).
+  SERVICE wikibase:label { bd:serviceParam wikibase:language "en". }
+} ORDER BY ?id
