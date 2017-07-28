@@ -68,10 +68,20 @@ elsif output_formatter == 'mediawiki'
   puts '== External source =='
   puts "#{csv_file_or_url}\n\n"
 
+  headers, *rows = diff
+
+  puts '== Stats =='
+
+  puts "* Items only found in SPARQL (<code>---</code> in the first column): #{rows.count { |r| r.first == '---' }}"
+  puts "* Items only found in CSV (<code>+++</code> in the first column): #{rows.count { |r| r.first == '+++' }}"
+  puts "* Items that differ between sources (&rarr; in the first column): #{rows.count { |r| r.first == '->' }}"
+  puts
+  puts "* Total Wikidata items returned by SPARQL query: #{wikidata_records.size}"
+  puts "* Total Rows in CSV: #{external_csv.size}"
+
   puts '== Comparison =='
 
   puts '{|class="wikitable"'
-  headers, *rows = diff
   headers.each do |header|
     puts "| #{header}"
   end
