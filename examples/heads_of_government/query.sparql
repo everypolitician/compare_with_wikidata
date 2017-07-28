@@ -1,0 +1,9 @@
+SELECT (STRAFTER(STR(?item), STR(wd:)) AS ?id) (STRAFTER(STR(?officeholder), STR(wd:)) AS ?holder_id) ?itemLabel
+  WHERE {
+    ?item wdt:P31 wd:Q6256 .
+    OPTIONAL {
+      ?item wdt:P1313 ?office .
+      OPTIONAL { ?office wdt:P1308 ?officeholder . }
+    }
+  }
+ORDER BY ?itemLabel
