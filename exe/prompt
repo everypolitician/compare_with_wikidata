@@ -72,26 +72,40 @@ if output_formatter == 'text'
     puts "  #{morph_id} #{morph_record[:name]}"
   end
 elsif output_formatter == 'mediawiki'
-  puts 'SPARQL query used for this comparison:'
-  puts "{{sparql|query=#{wikidata_list.sparql_query}}}"
-  puts '== Records matched to Wikidata but not returned by SPARQL query =='
+  puts '== SPARQL query =='
+  puts "{{sparql|query=#{wikidata_list.sparql_query}\n}}"
 
-  not_in_wikidata.each do |item_id|
-    morph_record = morph_records[wikidata_item_to_morph_id[item_id]]
-    puts "* {{Q|#{item_id}}} #{morph_record[:id]} #{morph_record[:name]}"
+  puts '== External source =='
+  puts '=== Morph scraper ==='
+  puts "https://morph.io/#{morph_scraper}\n\n"
+  puts '=== SQL query ==='
+  puts '<syntaxhighlight lang="sql">'
+  puts scraper_sql
+  puts '</syntaxhighlight>'
+
+  puts '== Items in external source but not in SPARQL query =='
+
+  if not_in_wikidata.any? || morph_ids_without_wikidata.any?
+    not_in_wikidata.each do |item_id|
+      morph_record = morph_records[wikidata_item_to_morph_id[item_id]]
+      puts "* [[#{item_id}|#{morph_record[:name]}]] ([#{morph_record[:source]} #{morph_record[:id]}])"
+    end
+    morph_ids_without_wikidata.each do |morph_id|
+      morph_record = morph_records[morph_id]
+      puts "* #{morph_record[:name]} ([#{morph_record[:source]} #{morph_record[:id]}])"
+    end
+  else
+    puts 'None'
   end
 
-  puts '== Records not in the Morph scraper, but in Wikidata =='
+  puts '== Items in SPARQL query but not in external source =='
 
-  not_in_morph.each do |item_id|
-    puts "* {{Q|#{item_id}}}"
-  end
-
-  puts '== Records in the the Morph scraper not associated with a Wikidata item =='
-
-  morph_ids_without_wikidata.each do |morph_id|
-    morph_record = morph_records[morph_id]
-    puts "* #{morph_id} #{morph_record[:name]}"
+  if not_in_morph.any?
+    not_in_morph.each do |item_id|
+      puts "* {{Q|#{item_id}}}"
+    end
+  else
+    puts 'None'
   end
 else
   abort "Unknown output formatter: #{output_formatter.inspect}"
