@@ -1,0 +1,7 @@
+SELECT DISTINCT (STRAFTER(STR(?item), STR(wd:)) AS ?id) (STRBEFORE(STR(?startDate), "T") AS ?start_date) (STRBEFORE(STR(?endDate), "T") AS ?end_date) WHERE {
+  ?item p:P39 ?mem .
+  ?mem ps:P39 wd:Q30580545 .
+  OPTIONAL { ?mem pq:P580 ?startDate }
+  OPTIONAL { ?mem pq:P582 ?endDate }
+  SERVICE wikibase:label { bd:serviceParam wikibase:language "en". }
+} ORDER by ?id

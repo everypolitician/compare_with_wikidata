@@ -1,4 +1,0 @@
-SELECT DISTINCT (STRAFTER(STR(?item), STR(wd:)) AS ?id) WHERE {
-  ?item p:P39 ?mem .
-  ?mem ps:P39 wd:Q30580545 .
-} ORDER BY ?id

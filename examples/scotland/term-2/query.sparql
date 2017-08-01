@@ -1,0 +1,4 @@
+SELECT DISTINCT (STRAFTER(STR(?item), STR(wd:)) AS ?id) WHERE {
+  ?item wdt:P39 wd:Q30580542.
+}
+ORDER BY ?id
