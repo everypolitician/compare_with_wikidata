@@ -2,6 +2,9 @@
 require 'bundler/setup'
 require 'daff'
 require 'csv'
+require 'erb'
+require 'mediawiki/client'
+require 'mediawiki/page'
 
 require 'compare_with_wikidata'
 
@@ -31,37 +34,44 @@ def csv_from_url(file_or_url)
   end
 end
 
+WIKI_TEMPLATE_NAME = 'Compare Wikidata with CSV'.freeze
+WIKI_USERNAME = ENV['WIKI_USERNAME']
+WIKI_PASSWORD = ENV['WIKI_PASSWORD']
+
 if ARGV.size != 2
-  abort "Usage: #{$PROGRAM_NAME} SPARQL_QUERY CSV_FILE_OR_URL
-e.g. prompt 'SELECT (STRAFTER(STR(?item), STR(wd:)) AS ?id) (STRAFTER(STR(?officeholder), STR(wd:)) AS ?holder_id)
-  WHERE {
-    ?item wdt:P31 wd:Q6256 .
-    OPTIONAL {
-      ?item wdt:P1313 ?office .
-      OPTIONAL { ?office wdt:P1308 ?officeholder . }
-    }
-  }
-ORDER BY ?id' \\
-https://gist.githubusercontent.com/chrismytton/ddb3974b056f92051370a28b27168bbe/raw/4d2286134a6f8a9a47fbeb546069535eff589ca3/heads-of-government-morph.csv
+  abort "Usage: #{$PROGRAM_NAME} MEDIAWIKI_SITE PAGE_TITLE
+e.g. compare_with_wikidata www.wikidata.org 'User:Mhl20/Fibonacci test'
 "
 end
 
-sparql_query, csv_file_or_url = ARGV
-output_formatter = ENV.fetch('PROMPT_OUTPUT_FORMATTER', 'text')
+mediawiki_site, page_title = ARGV
+
+client = MediaWiki::Client.new(
+  site:     mediawiki_site,
+  username: WIKI_USERNAME,
+  password: WIKI_PASSWORD
+)
+
+section = MediaWiki::Page::ReplaceableContent.new(
+  client:   client,
+  title:    page_title,
+  template: WIKI_TEMPLATE_NAME
+)
+
+sparql_query = section.params[:sparql]
+csv_url = section.params[:csv_url]
 
 wikidata_records = CompareWithWikidata::MembershipList::Wikidata.new(sparql_query: sparql_query).to_a
 
-external_csv = csv_from_url(csv_file_or_url)
+external_csv = csv_from_url(csv_url)
 
 headers, *rows = daff_diff(wikidata_records, external_csv)
+template = ERB.new(File.read(File.join(__dir__, '..', 'templates/mediawiki.erb')), nil, '-')
+wikitext = template.result(binding)
 
-if output_formatter == 'text'
-  CSV do |csv|
-    csv << headers
-    rows.each { |row| csv << row }
-  end
-elsif output_formatter == 'mediawiki'
-  require 'erb'
-  template = ERB.new(File.read(File.join(__dir__, '..', 'templates/mediawiki.erb')), nil, '-')
-  puts template.result(binding)
+if ENV.key?('DEBUG')
+  puts wikitext
+else
+  section.replace_output(wikitext, "Update templates at #{DateTime.now}")
+  puts "Done: Updated #{page_title} on #{mediawiki_site}"
 end
