@@ -1,0 +1,32 @@
+== SPARQL query ==
+
+{{sparql
+|query=<%= sparql_query.gsub('|', '{{!}}')%>
+}}
+
+== External source ==
+
+<%= csv_file_or_url %>
+
+== Stats ==
+
+* Items only found in SPARQL (<code>---</code> in the first column): <%= rows.count { |r| r.first == '---' } %>
+* Items only found in CSV (<code>+++</code> in the first column): <%= rows.count { |r| r.first == '+++' } %>
+* Items that differ between sources (&rarr; in the first column): <%= rows.count { |r| r.first == '->' } %>
+* Total Wikidata items returned by SPARQL query: <%= wikidata_records.size %>
+* Total Rows in CSV: <%= external_csv.size %>
+
+== Comparison ==
+
+{|class="wikitable"
+<% headers.each do |header| -%>
+| <%= header %>
+<% end -%>
+|-
+<% rows.each do |row| -%>
+<% row.each do |item| -%>
+| <%= item.to_s.gsub(/Q(\d+)/, '{{Q|\\1}}').gsub('->', ' &rarr; ') %>
+<% end -%>
+|-
+<% end -%>
+|}

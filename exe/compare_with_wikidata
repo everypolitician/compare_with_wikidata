@@ -53,45 +53,15 @@ wikidata_records = CompareWithWikidata::MembershipList::Wikidata.new(sparql_quer
 
 external_csv = csv_from_url(csv_file_or_url)
 
-diff = daff_diff(wikidata_records, external_csv)
+headers, *rows = daff_diff(wikidata_records, external_csv)
 
 if output_formatter == 'text'
   CSV do |csv|
-    diff.each { |row| csv << row }
+    csv << headers
+    rows.each { |row| csv << row }
   end
 elsif output_formatter == 'mediawiki'
-  puts '== SPARQL query =='
-  # MediaWiki interprets | as part of a template, so escape pipes in SPARQL query.
-  puts "{{sparql|query=#{sparql_query.gsub('|', '{{!}}')}\n}}"
-
-  puts '== External source =='
-  puts "#{csv_file_or_url}\n\n"
-
-  headers, *rows = diff
-
-  puts '== Stats =='
-
-  puts "* Items only found in SPARQL (<code>---</code> in the first column): #{rows.count { |r| r.first == '---' }}"
-  puts "* Items only found in CSV (<code>+++</code> in the first column): #{rows.count { |r| r.first == '+++' }}"
-  puts "* Items that differ between sources (&rarr; in the first column): #{rows.count { |r| r.first == '->' }}"
-  puts
-  puts "* Total Wikidata items returned by SPARQL query: #{wikidata_records.size}"
-  puts "* Total Rows in CSV: #{external_csv.size}"
-
-  puts '== Comparison =='
-
-  puts '{|class="wikitable"'
-  headers.each do |header|
-    puts "| #{header}"
-  end
-
-  puts '|-'
-
-  rows.each do |row|
-    row.each do |item|
-      puts "| #{item.to_s.gsub(/Q(\d+)/, '{{Q|\\1}}').gsub('->', ' &rarr; ')}"
-    end
-    puts '|-'
-  end
-  puts '|}'
+  require 'erb'
+  template = ERB.new(File.read(File.join(__dir__, '..', 'templates/mediawiki.erb')), nil, '-')
+  puts template.result(binding)
 end
