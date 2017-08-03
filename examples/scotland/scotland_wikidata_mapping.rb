@@ -8,11 +8,11 @@ id_mapping = people.map do |person|
   wikidata = person.identifiers.find { |id| id[:scheme] == 'wikidata' }
   [
     parlparse[:identifier].split('/').last,
-    wikidata[:identifier]
+    wikidata[:identifier],
   ]
 end
 
 CSV do |csv|
-  csv << [:id, :wikidata_id]
+  csv << %i[id wikidata_id]
   id_mapping.each { |row| csv << row }
 end
