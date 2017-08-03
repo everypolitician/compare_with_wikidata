@@ -1,7 +1,7 @@
 == SPARQL query ==
 
 {{sparql
-|query=<%= sparql_query.gsub('|', '{{!}}') %>
+|query=<%= sparql.gsub('|', '{{!}}') %>
 }}
 
 == External source ==
@@ -18,8 +18,8 @@
 
 == Comparison ==
 
-<% if section.params[:header_template] %>
-{{<%= section.params[:header_template] %>}}
+<% if mediawiki_page.params[:header_template] %>
+{{<%= mediawiki_page.params[:header_template] %>}}
 <% else %>
 {|class="wikitable"
 <% headers.each do |header| -%>
@@ -28,8 +28,8 @@
 |-
 <% end -%>
 <%= diff_rows.map(&:wikitext).join("\n") %>
-<% if section.params[:footer_template] %>
-{{<%= section.params[:footer_template] %>}}
+<% if mediawiki_page.params[:footer_template] %>
+{{<%= mediawiki_page.params[:footer_template] %>}}
 <% else %>
 |}
 <% end %>
