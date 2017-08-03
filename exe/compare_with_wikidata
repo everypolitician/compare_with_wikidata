@@ -66,6 +66,7 @@ wikidata_records = CompareWithWikidata::MembershipList::Wikidata.new(sparql_quer
 external_csv = csv_from_url(csv_url)
 
 headers, *rows = daff_diff(wikidata_records, external_csv)
+diff_rows = rows.map { |row| CompareWithWikidata::DiffRow.new(headers: headers, row: row, params: section.params) }
 template = ERB.new(File.read(File.join(__dir__, '..', 'templates/mediawiki.erb')), nil, '-')
 wikitext = template.result(binding)
 
