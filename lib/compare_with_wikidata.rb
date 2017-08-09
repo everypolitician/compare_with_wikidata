@@ -53,7 +53,9 @@ module CompareWithWikidata
       template: WIKI_TEMPLATE_NAME
     )
 
-    sparql_query = section.params[:sparql]
+    # FIXME: Ideally this would use the Expandtemplates API, rather than gsub.
+    # https://github.com/everypolitician/mediawiki-page-replaceable_content/issues/3
+    sparql_query = section.params[:sparql].gsub('{{!}}', '|')
     csv_url = section.params[:csv_url]
 
     wikidata_records = CompareWithWikidata::MembershipList::Wikidata.new(sparql_query: sparql_query).to_a
