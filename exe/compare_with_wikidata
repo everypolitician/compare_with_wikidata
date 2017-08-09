@@ -1,11 +1,4 @@
 #!/usr/bin/env ruby
-require 'bundler/setup'
-require 'daff'
-require 'csv'
-require 'erb'
-require 'mediawiki/client'
-require 'mediawiki/page'
-
 require 'compare_with_wikidata'
 
 if ARGV.size != 2

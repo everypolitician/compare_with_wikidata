@@ -3,6 +3,12 @@ require 'compare_with_wikidata/version'
 require 'compare_with_wikidata/diff_row'
 require 'compare_with_wikidata/membership_list/wikidata'
 
+require 'daff'
+require 'csv'
+require 'erb'
+require 'mediawiki/client'
+require 'mediawiki/page'
+
 module CompareWithWikidata
   WIKI_TEMPLATE_NAME = 'Compare Wikidata with CSV'.freeze
   WIKI_USERNAME = ENV['WIKI_USERNAME']
