@@ -47,31 +47,37 @@ module CompareWithWikidata
       password: WIKI_PASSWORD
     )
 
-    section = MediaWiki::Page::ReplaceableContent.new(
-      client:   client,
-      title:    page_title,
-      template: WIKI_TEMPLATE_NAME
-    )
-
     # FIXME: Ideally this would use the Expandtemplates API, rather than gsub.
     # https://github.com/everypolitician/mediawiki-page-replaceable_content/issues/3
-    sparql_query = section.params[:sparql].gsub('{{!}}', '|')
-    csv_url = section.params[:csv_url]
+    sparql_query_wikitext = client.get_wikitext("#{page_title}/sparql").body
+    csv_url_wikitext = client.get_wikitext("#{page_title}/csv_url").body
+
+    sparql_query = client.send(:wrapped_client).action(:expandtemplates, text: sparql_query_wikitext, prop: :wikitext, title: page_title).data['wikitext']
+    csv_url = client.send(:wrapped_client).action(:expandtemplates, text: csv_url_wikitext, prop: :wikitext, title: page_title).data['wikitext'].strip
+
+    params = {}
+    %i(header_template footer_template row_added_template row_removed_template row_modified_template).each do |t|
+      response = client.get_wikitext("#{page_title}/#{t}")
+      if response.success?
+        params[t] = "/#{t}"
+      end
+    end
 
     wikidata_records = CompareWithWikidata::MembershipList::Wikidata.new(sparql_query: sparql_query).to_a
 
     external_csv = csv_from_url(csv_url)
 
     headers, *rows = daff_diff(wikidata_records, external_csv)
-    diff_rows = rows.map { |row| CompareWithWikidata::DiffRow.new(headers: headers, row: row, params: section.params) }
+    diff_rows = rows.map { |row| CompareWithWikidata::DiffRow.new(headers: headers, row: row, params: params) }
     template = ERB.new(File.read(File.join(__dir__, '..', 'templates/mediawiki.erb')), nil, '-')
     wikitext = template.result(binding)
 
     if ENV.key?('DEBUG')
       puts wikitext
     else
-      section.replace_output(wikitext, "Update templates at #{DateTime.now}")
-      puts "Done: Updated #{page_title} on #{mediawiki_site}"
+      client.edit(title: "#{page_title}/output", text: wikitext)
+      client.send(:wrapped_client).action(:purge, titles: [page_title])
+      puts "Done: Updated #{page_title}/output on #{mediawiki_site}"
     end
   end
 end

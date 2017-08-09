@@ -1,14 +1,8 @@
-== SPARQL query ==
-
-{{sparql
-|query=<%= sparql_query.gsub('|', '{{!}}') %>
-}}
-
-== External source ==
-
-<%= csv_url %>
-
-== Stats ==
+<noinclude>
+Please see the [[../|main prompt page]].
+</noinclude>
+<includeonly>
+=== Stats ===
 
 * Items only found in SPARQL (<code>---</code> in the first column): <%= diff_rows.count(&:removal?) %>
 * Items only found in CSV (<code>+++</code> in the first column): <%= diff_rows.count(&:addition?) %>
@@ -16,10 +10,10 @@
 * Total Wikidata items returned by SPARQL query: <%= wikidata_records.size %>
 * Total Rows in CSV: <%= external_csv.size %>
 
-== Comparison ==
+=== Comparison ===
 
-<% if section.params[:header_template] %>
-{{<%= section.params[:header_template] %>}}
+<% if params[:header_template] %>
+{{<%= params[:header_template] %>}}
 <% else %>
 {|class="wikitable"
 <% headers.each do |header| -%>
@@ -28,8 +22,9 @@
 |-
 <% end -%>
 <%= diff_rows.map(&:wikitext).join("\n") %>
-<% if section.params[:footer_template] %>
-{{<%= section.params[:footer_template] %>}}
+<% if params[:footer_template] %>
+{{<%= params[:footer_template] %>}}
 <% else %>
 |}
 <% end %>
+</includeonly>
