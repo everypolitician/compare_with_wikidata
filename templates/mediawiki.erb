@@ -2,16 +2,6 @@
 Please see the [[../|main prompt page]].
 </noinclude>
 <includeonly>
-=== Stats ===
-
-* Items only found in SPARQL (<code>---</code> in the first column): <%= diff_rows.count(&:removal?) %>
-* Items only found in CSV (<code>+++</code> in the first column): <%= diff_rows.count(&:addition?) %>
-* Items that differ between sources (&rarr; in the first column): <%= diff_rows.count(&:modification?) %>
-* Total Wikidata items returned by SPARQL query: <%= wikidata_records.size %>
-* Total Rows in CSV: <%= external_csv.size %>
-
-=== Comparison ===
-
 <% if params[:header_template] %>
 {{<%= params[:header_template] %>}}
 <% else %>

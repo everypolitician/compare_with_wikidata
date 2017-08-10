@@ -9,6 +9,5 @@ end
 
 mediawiki_site, page_title = ARGV
 
-include CompareWithWikidata
-
-compare_with_wikidata(mediawiki_site, page_title)
+diff_output_generator = CompareWithWikidata::DiffOutputGenerator.new(mediawiki_site: mediawiki_site, page_title: page_title)
+diff_output_generator.run!
