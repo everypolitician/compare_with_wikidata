@@ -1,13 +1,23 @@
 #!/usr/bin/env ruby
 require 'compare_with_wikidata'
+require 'uri'
 
-if ARGV.size != 2
-  abort "Usage: #{$PROGRAM_NAME} MEDIAWIKI_SITE PAGE_TITLE
-e.g. compare_with_wikidata www.wikidata.org 'User:Mhl20/Fibonacci test'
+
+if ARGV.size != 1
+  abort "Usage: #{$PROGRAM_NAME} REFRESH_URL_OR_QUERYSTRING
+e.g. compare_with_wikidata 'mediawiki_site=www.wikidata.org&page_title=User%3AMhl20%2FFibonacci_test'
 "
 end
 
-mediawiki_site, page_title = ARGV
+query = if ARGV.first.start_with?('http')
+          URI.parse(ARGV.first).query
+        else
+          ARGV.first
+        end
 
-diff_output_generator = CompareWithWikidata::DiffOutputGenerator.new(mediawiki_site: mediawiki_site, page_title: page_title)
+options = URI.decode_www_form(query).map { |k, v| [k.to_sym, v] }.to_h
+
+warn "Running with options: #{options.inspect}" if ENV.key?('DEBUG')
+
+diff_output_generator = CompareWithWikidata::DiffOutputGenerator.new(**options)
 diff_output_generator.run!
