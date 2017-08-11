@@ -14,22 +14,15 @@ module CompareWithWikidata
     WIKI_USERNAME = ENV['WIKI_USERNAME']
     WIKI_PASSWORD = ENV['WIKI_PASSWORD']
 
-    def initialize(mediawiki_site:, page_title:)
+    def initialize(mediawiki_site:, page_title:, **params)
       @mediawiki_site = mediawiki_site
       @page_title = page_title
+      @params = params
     end
 
     def run!
       sparql_query = expanded_wikitext("#{page_title}/sparql")
       csv_url = expanded_wikitext("#{page_title}/csv url").strip
-
-      params = {}
-      %i(header_template footer_template row_added_template row_removed_template row_modified_template).each do |t|
-        response = client.get_wikitext("#{page_title}/#{t}")
-        if response.success?
-          params[t] = "/#{t}"
-        end
-      end
 
       wikidata_records = CompareWithWikidata::MembershipList::Wikidata.new(sparql_query: sparql_query).to_a
 
@@ -51,7 +44,7 @@ module CompareWithWikidata
 
     private
 
-    attr_reader :mediawiki_site, :page_title
+    attr_reader :mediawiki_site, :page_title, :params
 
     def client
       @client ||= MediawikiApi::Client.new("https://#{mediawiki_site}/w/api.php").tap do |c|
