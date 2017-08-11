@@ -30,15 +30,19 @@ module CompareWithWikidata
 
       headers, *rows = daff_diff(wikidata_records, external_csv)
       diff_rows = rows.map { |row| CompareWithWikidata::DiffRow.new(headers: headers, row: row, params: params) }
-      template = ERB.new(File.read(File.join(__dir__, '..', 'templates/mediawiki.erb')), nil, '-')
-      output_wikitext = template.result(binding)
+      comparison_template = ERB.new(File.read(File.join(__dir__, '..', 'templates/comparison.erb')), nil, '-')
+      stats_template = ERB.new(File.read(File.join(__dir__, '..', 'templates/stats.erb')), nil, '-')
+      output_wikitext = comparison_template.result(binding)
+      stats_wikitext = stats_template.result(binding)
 
       if ENV.key?('DEBUG')
+        puts stats_wikitext
         puts output_wikitext
       else
-        client.edit(title: "#{page_title}/output", text: output_wikitext)
+        client.edit(title: "#{page_title}/comparison", text: output_wikitext)
+        client.edit(title: "#{page_title}/stats", text: stats_wikitext)
         client.action(:purge, titles: [page_title])
-        puts "Done: Updated #{page_title}/output on #{mediawiki_site}"
+        puts "Done: Updated #{page_title} on #{mediawiki_site}"
       end
     end
 
