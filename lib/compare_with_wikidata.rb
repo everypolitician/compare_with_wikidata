@@ -60,7 +60,9 @@ module CompareWithWikidata
     end
 
     def expanded_wikitext(page_title)
-      wikitext = client.get_wikitext(page_title).body
+      result = client.get_wikitext(page_title)
+      raise "#{page_title} doesn't exist, please create it." unless result.success?
+      wikitext = result.body
       result = client.action(:expandtemplates, text: wikitext, prop: :wikitext, title: page_title)
       result.data['wikitext']
     end
