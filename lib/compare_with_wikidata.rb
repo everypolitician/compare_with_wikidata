@@ -28,7 +28,7 @@ module CompareWithWikidata
       external_csv = csv_from_url(csv_url)
 
       headers, *rows = daff_diff(wikidata_records, external_csv)
-      diff_rows = rows.map { |row| CompareWithWikidata::DiffRow.new(headers: headers, row: row) }
+      diff_rows = rows.reject { |r| r.first == ':' }.map { |row| CompareWithWikidata::DiffRow.new(headers: headers, row: row) }
 
       always_overwrite = {
         '/stats' => 'templates/stats.erb',
