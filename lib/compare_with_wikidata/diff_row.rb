@@ -49,7 +49,26 @@ module CompareWithWikidata
     end
 
     def template_params
-      row_as_hash.to_a.map { |v| v.join('=') }.join('|')
+      (row_as_hash.take(1) + row_as_hash.to_a.drop(1).flat_map do |k, v|
+        if modification?
+          if v.include?('->')
+            sparql_v, csv_v = v.split('->')
+          else
+            sparql_v, csv_v = v, v
+          end
+        elsif addition?
+          sparql_v = nil
+          csv_v = v
+        elsif removal?
+          sparql_v = v
+          csv_v = nil
+        end
+        [
+          [k, v],
+          ["#{k}_sparql", sparql_v],
+          ["#{k}_csv", csv_v]
+        ]
+      end).map { |v| v.join('=') }.join('|')
     end
   end
 end
