@@ -2,19 +2,7 @@
 Please see the [[../|main prompt page]].
 </noinclude>
 <includeonly>
-<% if params[:header_template] %>
-{{<%= params[:header_template] %>}}
-<% else %>
-{|class="wikitable sortable"
-<% headers.each do |header| -%>
-! <%= header %>
-<% end -%>
-|-
-<% end -%>
+{{/header_template}}
 <%= diff_rows.map(&:wikitext).join("\n") %>
-<% if params[:footer_template] %>
-{{<%= params[:footer_template] %>}}
-<% else %>
-|}
-<% end %>
+{{/footer_template}}
 </includeonly>

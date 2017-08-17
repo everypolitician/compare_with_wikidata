@@ -2,24 +2,19 @@ require 'compare_with_wikidata/diff_row/cell'
 
 module CompareWithWikidata
   class DiffRow
-    CUSTOM_TEMPLATE_MAPPING = {
-      '+++' => :row_added_template,
-      '---' => :row_removed_template,
-      '->'  => :row_modified_template,
+    TEMPLATE_NAME_MAPPING = {
+      '+++' => '/row_added_template'.freeze,
+      '---' => '/row_removed_template'.freeze,
+      '->'  => '/row_modified_template'.freeze,
     }.freeze
 
-    def initialize(headers:, row:, params:)
+    def initialize(headers:, row:)
       @headers = headers
       @row = row
-      @params = params
     end
 
     def wikitext
-      if custom_template
-        "{{#{custom_template}|#{template_params}}}"
-      else
-        row.map { |c| "| #{c.to_s.gsub(/Q(\d+)/, '{{Q|\\1}}').gsub('->', ' &rarr; ')}" }.join("\n") + "\n|-\n"
-      end
+      "{{#{template_name}|#{template_params}}}"
     end
 
     def addition?
@@ -36,10 +31,10 @@ module CompareWithWikidata
 
     private
 
-    attr_reader :headers, :row, :params
+    attr_reader :headers, :row
 
-    def custom_template
-      params[CUSTOM_TEMPLATE_MAPPING[change_type]]
+    def template_name
+      TEMPLATE_NAME_MAPPING[change_type]
     end
 
     def row_as_hash
@@ -72,7 +67,9 @@ module CompareWithWikidata
 
     def value_cells
       row_as_hash.drop(1).flat_map do |k, v|
-        cell_class.new(key: k, value: v).cell_values
+        # Expand Wikidata IDs to templates.
+        value = v.to_s.gsub(/Q(\d+)/, '{{Q|\\1}}')
+        cell_class.new(key: k, value: value).cell_values
       end
     end
   end

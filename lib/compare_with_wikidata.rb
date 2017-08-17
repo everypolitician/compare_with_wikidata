@@ -14,10 +14,9 @@ module CompareWithWikidata
     WIKI_USERNAME = ENV['WIKI_USERNAME']
     WIKI_PASSWORD = ENV['WIKI_PASSWORD']
 
-    def initialize(mediawiki_site:, page_title:, **params)
+    def initialize(mediawiki_site:, page_title:)
       @mediawiki_site = mediawiki_site
       @page_title = page_title
-      @params = params
     end
 
     def run!
@@ -29,26 +28,63 @@ module CompareWithWikidata
       external_csv = csv_from_url(csv_url)
 
       headers, *rows = daff_diff(wikidata_records, external_csv)
-      diff_rows = rows.map { |row| CompareWithWikidata::DiffRow.new(headers: headers, row: row, params: params) }
-      comparison_template = ERB.new(File.read(File.join(__dir__, '..', 'templates/comparison.erb')), nil, '-')
-      stats_template = ERB.new(File.read(File.join(__dir__, '..', 'templates/stats.erb')), nil, '-')
-      output_wikitext = comparison_template.result(binding)
-      stats_wikitext = stats_template.result(binding)
+      diff_rows = rows.map { |row| CompareWithWikidata::DiffRow.new(headers: headers, row: row) }
 
-      if ENV.key?('DEBUG')
-        puts stats_wikitext
-        puts output_wikitext
-      else
-        client.edit(title: "#{page_title}/comparison", text: output_wikitext)
-        client.edit(title: "#{page_title}/stats", text: stats_wikitext)
-        client.action(:purge, titles: [page_title])
-        puts "Done: Updated #{page_title} on #{mediawiki_site}"
+      always_overwrite = {
+        '/stats' => 'templates/stats.erb',
+        '/comparison' => 'templates/comparison.erb',
+      }
+
+      overwrite_if_missing_or_empty = {
+        '/header_template' => 'templates/header_template.erb',
+        '/footer_template' => 'templates/footer_template.erb',
+        '/row_added_template' => 'templates/row_added.erb',
+        '/row_removed_template' => 'templates/row_removed.erb',
+        '/row_modified_template' => 'templates/row_modified.erb',
+      }
+
+      always_overwrite.each do |subpage, template|
+        template = ERB.new(File.read(File.join(__dir__, '..', template)), nil, '-')
+        dont_edit = "<!-- WARNING: This template is generated automatically. Any changes will be overwritten the next time the prompt is refreshed. -->\n"
+        wikitext = dont_edit + template.result(binding)
+        title = "#{page_title}#{subpage}"
+        if ENV.key?('DEBUG')
+          puts "# #{title}\n#{wikitext}"
+        else
+          client.edit(title: title, text: wikitext)
+          puts "Done: Updated #{title} on #{mediawiki_site}"
+        end
       end
+
+      overwrite_if_missing_or_empty.each do |subpage, template|
+        template = ERB.new(File.read(File.join(__dir__, '..', template)), nil, '-')
+        please_edit = "<!-- Feel free to edit this template. If you want to get the default back just delete the contents of the page and then refresh the prompt. -->\n"
+        wikitext = please_edit + template.result(binding)
+        title = "#{page_title}#{subpage}"
+        result = client.get_wikitext(title)
+        if !result.success? || (result.success? && result.body.strip.empty?)
+          if ENV.key?('DEBUG')
+            puts "# #{title}\n#{wikitext}"
+          else
+            client.edit(title: title, text: wikitext)
+            puts "Done: Added default contents to #{title} on #{mediawiki_site}"
+          end
+        else
+          if ENV.key?('DEBUG')
+            puts "# #{title}\n#{result.body}"
+          else
+            puts "Page #{title} already exists"
+          end
+        end
+      end
+
+      # Purge the main page, so it refreshes the subpages
+      client.action(:purge, titles: [page_title])
     end
 
     private
 
-    attr_reader :mediawiki_site, :page_title, :params
+    attr_reader :mediawiki_site, :page_title
 
     def client
       @client ||= MediawikiApi::Client.new("https://#{mediawiki_site}/w/api.php").tap do |c|
