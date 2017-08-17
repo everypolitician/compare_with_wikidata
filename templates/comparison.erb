@@ -5,7 +5,7 @@ Please see the [[../|main prompt page]].
 <% if params[:header_template] %>
 {{<%= params[:header_template] %>}}
 <% else %>
-{|class="wikitable"
+{|class="wikitable sortable"
 <% headers.each do |header| -%>
 ! <%= header %>
 <% end -%>
