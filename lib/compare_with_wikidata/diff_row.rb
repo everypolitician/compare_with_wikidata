@@ -1,3 +1,5 @@
+require 'compare_with_wikidata/diff_row/cell'
+
 module CompareWithWikidata
   class DiffRow
     CUSTOM_TEMPLATE_MAPPING = {
@@ -48,8 +50,30 @@ module CompareWithWikidata
       row_as_hash['@@']
     end
 
+    def cell_class
+      if modification?
+        CellModified
+      elsif addition?
+        CellAdded
+      elsif removal?
+        CellRemoved
+      else
+        raise "Unknown change type: #{change_type}"
+      end
+    end
+
     def template_params
-      row_as_hash.to_a.map { |v| v.join('=') }.join('|')
+      (change_type_cell + value_cells).map { |v| v.join('=') }.join('|')
+    end
+
+    def change_type_cell
+      row_as_hash.take(1)
+    end
+
+    def value_cells
+      row_as_hash.drop(1).flat_map do |k, v|
+        cell_class.new(key: k, value: v).cell_values
+      end
     end
   end
 end
