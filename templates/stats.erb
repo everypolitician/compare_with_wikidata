@@ -1,5 +1,7 @@
-* Items only found in SPARQL (<code>---</code> in the first column): <%= diff_rows.count(&:removal?) %>
-* Items only found in CSV (<code>+++</code> in the first column): <%= diff_rows.count(&:addition?) %>
-* Items that differ between sources (&rarr; in the first column): <%= diff_rows.count(&:modification?) %>
-* Total Wikidata items returned by SPARQL query: <%= wikidata_records.size %>
-* Total Rows in CSV: <%= external_csv.size %>
+{{/stats_template
+| removed=<%= diff_rows.count(&:removal?) %>
+| added=<%= diff_rows.count(&:addition?) %>
+| modified=<%= diff_rows.count(&:modification?) %>
+| sparql_count=<%= wikidata_records.size %>
+| csv_count=<%= external_csv.size %>
+}}

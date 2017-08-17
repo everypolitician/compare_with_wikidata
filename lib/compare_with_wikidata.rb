@@ -41,6 +41,7 @@ module CompareWithWikidata
         '/row_added_template' => 'templates/row_added.erb',
         '/row_removed_template' => 'templates/row_removed.erb',
         '/row_modified_template' => 'templates/row_modified.erb',
+        '/stats_template' => 'templates/stats_template.erb',
       }
 
       always_overwrite.each do |subpage, template|
