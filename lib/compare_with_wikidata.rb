@@ -28,6 +28,10 @@ module CompareWithWikidata
       external_csv = csv_from_url(csv_url)
 
       headers, *rows = daff_diff(wikidata_records, external_csv)
+      if headers.first == '!'
+        # Schema change detected
+        raise 'Different schemas detected. Please ensure SPARQL query and CSV URL return the same columns.'
+      end
       diff_rows = rows.reject { |r| r.first == ':' }.map { |row| CompareWithWikidata::DiffRow.new(headers: headers, row: row) }
 
       always_overwrite = {
