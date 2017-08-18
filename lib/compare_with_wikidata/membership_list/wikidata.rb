@@ -12,7 +12,7 @@ module CompareWithWikidata
       end
 
       def to_a
-        @to_a ||= CSV.parse(sparql_response.to_s)
+        @to_a ||= CSV.parse(sparql_response.to_s, headers: true, header_converters: :symbol, converters: nil).map(&:to_h)
       end
 
       private
