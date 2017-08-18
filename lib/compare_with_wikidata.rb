@@ -27,11 +27,20 @@ module CompareWithWikidata
 
       external_csv = csv_from_url(csv_url)
 
-      headers, *rows = daff_diff(wikidata_records, external_csv)
-      if headers.first == '!'
-        # Schema change detected
-        raise 'Different schemas detected. Please ensure SPARQL query and CSV URL return the same columns.'
+      common_headers = wikidata_records.first.keys & external_csv.first.keys
+      if common_headers.empty?
+        raise 'There are no common columns between the two sources. Please ensure the SPARQL and CSV share at least one common column.'
       end
+
+      wd_records = []
+      wd_records << common_headers
+      wikidata_records.each { |r| wd_records << r.values_at(*common_headers) }
+
+      csv_records = []
+      csv_records << common_headers
+      external_csv.each { |r| csv_records << r.values_at(*common_headers) }
+
+      headers, *rows = daff_diff(wd_records, csv_records)
       diff_rows = rows.reject { |r| r.first == ':' }.map { |row| CompareWithWikidata::DiffRow.new(headers: headers, row: row) }
 
       always_overwrite = {
@@ -127,11 +136,7 @@ module CompareWithWikidata
     end
 
     def csv_from_url(file_or_url)
-      if File.exist?(file_or_url)
-        CSV.read(file_or_url)
-      else
-        CSV.parse(RestClient.get(file_or_url).to_s)
-      end
+      CSV.parse(RestClient.get(file_or_url).to_s, headers: true, header_converters: :symbol, converters: nil).map(&:to_h)
     end
   end
 end
