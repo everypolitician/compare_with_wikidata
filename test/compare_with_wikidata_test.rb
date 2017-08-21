@@ -49,6 +49,22 @@ describe 'CompareWithWikidata' do
         end
         error.message.must_equal 'Bad Wikidata SPARQL request: most likely the query "SELECT ?a, ?b" was invalid'
       end
+
+      it 'includes the HTTP error code for any other kind of error' do
+        stub_request(
+          :get,
+          'https://query.wikidata.org/sparql?query=SELECT%20?value%20WHERE%20%7B%20wd:Q42%20wdt:P69%20?value%20%7D'
+        ).to_return(
+          status: [502, 'Workers weren\'t running or something']
+        )
+        error = assert_raises Exception do
+          wikidata = CompareWithWikidata::MembershipList::Wikidata.new(
+            sparql_query: 'SELECT ?value WHERE { wd:Q42 wdt:P69 ?value }'
+          )
+          wikidata.to_a
+        end
+        error.message.must_equal 'The Wikidata SPARQL query "SELECT ?value WHERE { wd:Q42 wdt:P69 ?value }" failed with the following error: 502 Bad Gateway'
+      end
     end
   end
 

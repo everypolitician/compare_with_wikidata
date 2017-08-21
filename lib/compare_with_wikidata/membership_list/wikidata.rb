@@ -20,9 +20,9 @@ module CompareWithWikidata
       def sparql_response
         @sparql_response ||= RestClient.get WIKIDATA_SPARQL_URL, params: { query: sparql_query }, accept: 'text/csv'
       rescue RestClient::BadRequest
-        raise "Bad Wikidata SPARQL request: most likely the query \"#{sparql_query.inspect}\" was invalid"
+        raise "Bad Wikidata SPARQL request: most likely the query #{sparql_query.inspect} was invalid"
       rescue RestClient::Exception => e
-        raise "Wikidata query #{sparql_query.inspect} failed: #{e.message}"
+        raise "The Wikidata SPARQL query #{sparql_query.inspect} failed with the following error: #{e.message}"
       end
     end
   end
