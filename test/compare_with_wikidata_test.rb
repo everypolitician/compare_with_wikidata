@@ -25,6 +25,26 @@ describe 'CompareWithWikidata' do
         ]
       end
 
+      it 'should produce a helpful exception message on a 404 error' do
+        stub_request(:get, 'http://example.com/non-existent').to_return(
+          status: [404, "No file found. Nothing at all."]
+        )
+        error = assert_raises Exception do
+          result = subject.send(:csv_from_url, 'http://example.com/non-existent')
+        end
+        error.message.must_equal 'There was an error fetching: http://example.com/non-existent - the error was: 404 Not Found'
+      end
+
+      it 'should produce a helpful exception message on a 404 error' do
+        stub_request(:get, 'http://example.com/errors').to_return(
+          status: [500, "Our fault. Not your fault."]
+        )
+        error = assert_raises Exception do
+          result = subject.send(:csv_from_url, 'http://example.com/errors')
+        end
+        error.message.must_equal 'There was an error fetching: http://example.com/errors - the error was: 500 Internal Server Error'
+      end
+
       it 'should parse a minimal HTML document without commas or quotes as a single column' do
         # This is a weird example, but some minimal valid HTML
         # documents are also valid single column CSV files, and we

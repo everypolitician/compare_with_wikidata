@@ -142,6 +142,8 @@ module CompareWithWikidata
       CSV.parse(RestClient.get(file_or_url).to_s, headers: true, header_converters: :symbol, converters: nil).map(&:to_h)
     rescue CSV::MalformedCSVError
       raise MalformedCSVError.new("The URL #{file_or_url} couldn't be parsed as CSV. Is it really a valid CSV file?")
+    rescue RestClient::Exception => e
+      raise Exception.new("There was an error fetching: #{file_or_url} - the error was: #{e.message}")
     end
   end
 end
