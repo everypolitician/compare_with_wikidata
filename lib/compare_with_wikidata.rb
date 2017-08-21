@@ -9,6 +9,9 @@ require 'erb'
 require 'mediawiki_api'
 
 module CompareWithWikidata
+  class MalformedCSVError < StandardError
+  end
+
   class DiffOutputGenerator
     WIKI_TEMPLATE_NAME = 'Compare Wikidata with CSV'.freeze
     WIKI_USERNAME = ENV['WIKI_USERNAME']
@@ -137,6 +140,8 @@ module CompareWithWikidata
 
     def csv_from_url(file_or_url)
       CSV.parse(RestClient.get(file_or_url).to_s, headers: true, header_converters: :symbol, converters: nil).map(&:to_h)
+    rescue CSV::MalformedCSVError
+      raise MalformedCSVError.new("The URL #{file_or_url} couldn't be parsed as CSV. Is it really a valid CSV file?")
     end
   end
 end
