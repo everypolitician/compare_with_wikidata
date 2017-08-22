@@ -88,7 +88,15 @@ module CompareWithWikidata
         end
       end
 
-      # Purge the main page, so it refreshes the subpages
+      # Apparently everything went smoothly, so overwrite the /errors
+      # subpage to make sure that it's empty.
+      client.edit(title: errors_page_title, text: '')
+
+    rescue StandardError => e
+      client.edit(title: errors_page_title, text: "<nowiki>#{e.message}</nowiki>")
+    ensure
+      # Purge the main page, so it refreshes the subpages, even if
+      # there was an exception.
       client.action(:purge, titles: [page_title])
     end
 
@@ -103,6 +111,10 @@ module CompareWithWikidata
           raise "MediawikiApi::Client#log_in failed: #{result}"
         end
       end
+    end
+
+    def errors_page_title
+      "#{page_title}/errors"
     end
 
     def expanded_wikitext(page_title)
