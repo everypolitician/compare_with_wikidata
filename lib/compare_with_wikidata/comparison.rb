@@ -23,11 +23,15 @@ module CompareWithWikidata
     attr_reader :sparql_items, :csv_items, :columns
 
     def daff_sparql_items
-      [columns, *sparql_items.map { |r| r.values_at(*columns) }]
+      [columns, *sparql_items.map { |r| r.values_at(*columns).map { |c| cleaned_cell(c) } }]
     end
 
     def daff_csv_items
       [columns, *csv_items.map { |r| r.values_at(*columns) }]
+    end
+
+    def cleaned_cell(cell)
+      cell.to_s.sub(%r{^http://www.wikidata.org/entity/(Q\d+)$}, '\\1')
     end
 
     def daff_results

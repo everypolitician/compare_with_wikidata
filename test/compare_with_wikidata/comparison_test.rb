@@ -19,4 +19,19 @@ describe CompareWithWikidata::Comparison do
       subject.diff_rows.first.class.must_equal CompareWithWikidata::DiffRow
     end
   end
+
+  describe 'SPARQL items with Wikidata URL prefix' do
+    let(:sparql_items) do
+      [
+        { id: 'http://www.wikidata.org/entity/Q1' },
+        { id: 'http://www.wikidata.org/entity/Q2' },
+      ]
+    end
+
+    let(:csv_items) { [{ id: 'Q1' }, { id: 'Q2' }] }
+
+    it 'ignores the Wikidata URL prefix' do
+      subject.diff_rows.size.must_equal 0
+    end
+  end
 end
