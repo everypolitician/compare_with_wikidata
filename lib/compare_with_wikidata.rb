@@ -1,9 +1,8 @@
 require 'compare_with_wikidata/version'
 
-require 'compare_with_wikidata/diff_row'
 require 'compare_with_wikidata/membership_list/wikidata'
+require 'compare_with_wikidata/comparison'
 
-require 'daff'
 require 'csv'
 require 'erb'
 require 'mediawiki_api'
@@ -38,16 +37,7 @@ module CompareWithWikidata
         raise 'There are no common columns between the two sources. Please ensure the SPARQL and CSV share at least one common column.'
       end
 
-      wd_records = []
-      wd_records << common_headers
-      wikidata_records.each { |r| wd_records << r.values_at(*common_headers) }
-
-      csv_records = []
-      csv_records << common_headers
-      external_csv.each { |r| csv_records << r.values_at(*common_headers) }
-
-      headers, *rows = daff_diff(wd_records, csv_records)
-      diff_rows = rows.reject { |r| r.first == ':' }.map { |row| CompareWithWikidata::DiffRow.new(headers: headers, row: row) }
+      comparison = Comparison.new(sparql_items: wikidata_records, csv_items: external_csv, columns: common_headers)
 
       always_overwrite = {
         '/stats' => 'templates/stats.erb',
@@ -121,24 +111,6 @@ module CompareWithWikidata
       wikitext = result.body
       result = client.action(:expandtemplates, text: wikitext, prop: :wikitext, title: page_title)
       result.data['wikitext']
-    end
-
-    def daff_diff(data1, data2)
-      t1 = Daff::TableView.new(data1)
-      t2 = Daff::TableView.new(data2)
-
-      alignment = Daff::Coopy.compare_tables(t1, t2).align
-
-      data_diff = []
-      table_diff = Daff::TableView.new(data_diff)
-
-      flags = Daff::CompareFlags.new
-      # We don't want any context in the resulting diff
-      flags.unchanged_context = 0
-      highlighter = Daff::TableDiff.new(alignment, flags)
-      highlighter.hilite(table_diff)
-
-      data_diff
     end
 
     def csv_from_url(file_or_url)

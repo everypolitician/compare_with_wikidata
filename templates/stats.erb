@@ -1,7 +1,7 @@
 {{/stats_template
-| removed=<%= diff_rows.count(&:removal?) %>
-| added=<%= diff_rows.count(&:addition?) %>
-| modified=<%= diff_rows.count(&:modification?) %>
+| removed=<%= comparison.diff_rows.count(&:removal?) %>
+| added=<%= comparison.diff_rows.count(&:addition?) %>
+| modified=<%= comparison.diff_rows.count(&:modification?) %>
 | sparql_count=<%= wikidata_records.size %>
 | csv_count=<%= external_csv.size %>
 }}
