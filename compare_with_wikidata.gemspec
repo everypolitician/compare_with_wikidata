@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
   spec.authors       = ['EveryPolitician']
   spec.email         = ['team@everypolitician.org']
 
-  spec.summary       = 'Compare an external source of data with items in Wikdata'
+  spec.summary       = 'Compare the results of a Wikidata SPARQL query with a CSV file'
   spec.homepage      = 'https://github.com/everypolitician/compare_morph_to_wikidata'
 
   spec.files = `git ls-files -z`.split("\x0").reject do |f|
