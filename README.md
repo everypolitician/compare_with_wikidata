@@ -1,28 +1,33 @@
 # CompareWithWikidata
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/compare_with_wikidata`. To experiment with that code, run `bin/console` for an interactive prompt.
-
-TODO: Delete this and the text above, and describe your gem
+Library for diffing Wikidata SPARQL queries with CSVs.
 
 ## Installation
 
 Add this line to your application's Gemfile:
 
 ```ruby
-gem 'compare_with_wikidata'
+gem 'compare_with_wikidata', github: 'everypolitician/compare_with_wikidata'
 ```
 
 And then execute:
 
     $ bundle
 
-Or install it yourself as:
-
-    $ gem install compare_with_wikidata
-
 ## Usage
 
-TODO: Write usage instructions here
+### Update a prompt on a given page
+
+```ruby
+CompareWithWikidata::DiffOutputGenerator.new(
+  mediawiki_site: 'www.wikidata.org',
+  page_title: 'User:Chris_Mytton/sandbox/prompts/heads_of_government'
+).run!
+```
+
+This will look for `/sparql` and `/csv_url` subpages under the provided page and use those as the inputs for the comparison. It will then write the output to a `/comparison` subpage and some stats to a `/stats` subpage.
+
+As part of this process we also create some default templates that allow you to customize the look of a prompt. You can find links to these subpages in the "Customize" section of a prompt page.
 
 ## Development
 
