@@ -68,7 +68,8 @@ module CompareWithWikidata
 
       overwrite_if_missing_or_empty.each do |subpage, template|
         template = ERB.new(File.read(File.join(__dir__, '..', template)), nil, '-')
-        please_edit = "<!-- Feel free to edit this template. If you want to get the default back just delete the contents of the page and then refresh the prompt. -->\n"
+        please_edit = "<!-- Feel free to edit this template. If you want to get the default back just delete the contents of the page and then refresh the prompt. " \
+          "If you want this template to render nothing (e.g. to skip a row type) then delete everything except this comment. -->\n"
         wikitext = please_edit + template.result(binding)
         title = "#{page_title}#{subpage}"
         result = client.get_wikitext(title)
