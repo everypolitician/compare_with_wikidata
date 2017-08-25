@@ -53,10 +53,13 @@ module CompareWithWikidata
         '/stats_template' => 'templates/stats_template.erb',
       }
 
+      dont_edit = "<!-- WARNING: This template is generated automatically. Any changes will be overwritten the next time the prompt is refreshed. -->\n"
+      please_edit = "<!-- Feel free to edit this template. If you want to get the default back just delete the contents of the page and then refresh the prompt. -->\n"
+
       always_overwrite.each do |subpage, template|
         template = ERB.new(File.read(File.join(__dir__, '..', template)), nil, '-')
-        dont_edit = "<!-- WARNING: This template is generated automatically. Any changes will be overwritten the next time the prompt is refreshed. -->\n"
-        wikitext = dont_edit + template.result(binding)
+        wikitext = template.result(binding)
+
         title = "#{page_title}#{subpage}"
         if ENV.key?('DEBUG')
           puts "# #{title}\n#{wikitext}"
@@ -68,8 +71,8 @@ module CompareWithWikidata
 
       overwrite_if_missing_or_empty.each do |subpage, template|
         template = ERB.new(File.read(File.join(__dir__, '..', template)), nil, '-')
-        please_edit = "<!-- Feel free to edit this template. If you want to get the default back just delete the contents of the page and then refresh the prompt. -->\n"
-        wikitext = please_edit + template.result(binding)
+        wikitext = template.result(binding)
+
         title = "#{page_title}#{subpage}"
         result = client.get_wikitext(title)
         if !result.success? || (result.success? && result.body.strip.empty?)
