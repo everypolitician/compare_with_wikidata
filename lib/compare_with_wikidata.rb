@@ -42,15 +42,12 @@ module CompareWithWikidata
       always_overwrite = {
         '/stats' => 'templates/stats.erb',
         '/comparison' => 'templates/comparison.erb',
-      }
-
-      overwrite_if_missing_or_empty = {
-        '/header_template' => 'templates/header_template.erb',
-        '/footer_template' => 'templates/footer_template.erb',
-        '/row_added_template' => 'templates/row_added.erb',
-        '/row_removed_template' => 'templates/row_removed.erb',
-        '/row_modified_template' => 'templates/row_modified.erb',
-        '/stats_template' => 'templates/stats_template.erb',
+        '/_default_header_template' => 'templates/header_template.erb',
+        '/_default_footer_template' => 'templates/footer_template.erb',
+        '/_default_row_added_template' => 'templates/row_added.erb',
+        '/_default_row_removed_template' => 'templates/row_removed.erb',
+        '/_default_row_modified_template' => 'templates/row_modified.erb',
+        '/_default_stats_template' => 'templates/stats_template.erb',
       }
 
       always_overwrite.each do |subpage, template|
@@ -63,29 +60,6 @@ module CompareWithWikidata
         else
           client.edit(title: title, text: wikitext)
           puts "Done: Updated #{title} on #{mediawiki_site}"
-        end
-      end
-
-      overwrite_if_missing_or_empty.each do |subpage, template|
-        template = ERB.new(File.read(File.join(__dir__, '..', template)), nil, '-')
-        please_edit = "<!-- Feel free to edit this template. If you want to get the default back just delete the contents of the page and then refresh the prompt. " \
-          "If you want this template to render nothing (e.g. to skip a row type) then delete everything except this comment. -->\n"
-        wikitext = please_edit + template.result(binding)
-        title = "#{page_title}#{subpage}"
-        result = client.get_wikitext(title)
-        if !result.success? || (result.success? && result.body.strip.empty?)
-          if ENV.key?('DEBUG')
-            puts "# #{title}\n#{wikitext}"
-          else
-            client.edit(title: title, text: wikitext)
-            puts "Done: Added default contents to #{title} on #{mediawiki_site}"
-          end
-        else
-          if ENV.key?('DEBUG')
-            puts "# #{title}\n#{result.body}"
-          else
-            puts "Page #{title} already exists"
-          end
         end
       end
 

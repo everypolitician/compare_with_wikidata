@@ -2,19 +2,21 @@ require 'compare_with_wikidata/diff_row/cell'
 
 module CompareWithWikidata
   class DiffRow
-    TEMPLATE_NAME_MAPPING = {
-      '+++' => '/row_added_template'.freeze,
-      '---' => '/row_removed_template'.freeze,
-      '->'  => '/row_modified_template'.freeze,
-    }.freeze
-
     def initialize(headers:, row:)
       @headers = headers
       @row = row
     end
 
-    def wikitext
-      "{{#{template_name}|#{template_params}}}"
+    def type
+      {
+        '+++' => 'row_added',
+        '---' => 'row_removed',
+        '->' => 'row_modified',
+      }[change_type]
+    end
+
+    def template_params
+      (change_type_cell + value_cells).map { |v| v.join('=') }.join('|')
     end
 
     def addition?
@@ -32,10 +34,6 @@ module CompareWithWikidata
     private
 
     attr_reader :headers, :row
-
-    def template_name
-      TEMPLATE_NAME_MAPPING[change_type]
-    end
 
     def row_as_hash
       headers.zip(row).to_h
@@ -55,10 +53,6 @@ module CompareWithWikidata
       else
         raise "Unknown change type: #{change_type}"
       end
-    end
-
-    def template_params
-      (change_type_cell + value_cells).map { |v| v.join('=') }.join('|')
     end
 
     def change_type_cell
