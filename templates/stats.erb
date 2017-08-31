@@ -1,7 +1,18 @@
+{{#if: {{/stats_template}}
+|
 {{/stats_template
 | removed=<%= comparison.diff_rows.count(&:removal?) %>
 | added=<%= comparison.diff_rows.count(&:addition?) %>
 | modified=<%= comparison.diff_rows.count(&:modification?) %>
 | sparql_count=<%= wikidata_records.size %>
 | csv_count=<%= external_csv.size %>
+}}
+|
+{{/_default_stats_template
+| removed=<%= comparison.diff_rows.count(&:removal?) %>
+| added=<%= comparison.diff_rows.count(&:addition?) %>
+| modified=<%= comparison.diff_rows.count(&:modification?) %>
+| sparql_count=<%= wikidata_records.size %>
+| csv_count=<%= external_csv.size %>
+}}
 }}

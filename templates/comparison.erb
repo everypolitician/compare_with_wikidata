@@ -2,7 +2,22 @@
 Please see the [[../|main prompt page]].
 </noinclude>
 <includeonly>
-{{/header_template}}
-<%= comparison.diff_rows.map(&:wikitext).join("\n") %>
-{{/footer_template}}
+
+{{#if: {{/header_template}}
+| {{/header_template}}
+| {{/_default_header_template}}
+}}
+
+<% comparison.diff_rows.each do |row| %>
+{{#if: {{/<%= row.type %>_template|<%= row.template_params %>}}
+| {{/<%= row.type %>_template|<%= row.template_params %>}}
+| {{/_default_<%= row.type %>_template|<%= row.template_params %>}}
+}}
+<% end %>
+
+{{#if: {{/footer_template}}
+| {{/footer_template}}
+| {{/_default_footer_template}}
+}}
+
 </includeonly>
