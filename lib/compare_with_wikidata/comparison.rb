@@ -55,6 +55,7 @@ module CompareWithWikidata
       flags = Daff::CompareFlags.new
       # We don't want any context in the resulting diff
       flags.unchanged_context = 0
+      flags.show_unchanged_columns = true
       highlighter = Daff::TableDiff.new(alignment, flags)
       highlighter.hilite(table_diff)
 
