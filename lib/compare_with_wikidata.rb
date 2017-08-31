@@ -106,6 +106,7 @@ module CompareWithWikidata
     attr_reader :mediawiki_site, :page_title
 
     def client
+      abort "Please set WIKI_USERNAME and WIKI_PASSWORD" if WIKI_USERNAME.to_s.empty? || WIKI_PASSWORD.to_s.empty?
       @client ||= MediawikiApi::Client.new("https://#{mediawiki_site}/w/api.php").tap do |c|
         result = c.log_in(WIKI_USERNAME, WIKI_PASSWORD)
         unless result['result'] == 'Success'
