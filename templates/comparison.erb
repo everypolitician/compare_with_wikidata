@@ -1,32 +1,23 @@
-<noinclude>
-Please see the [[../|main prompt page]].
-</noinclude>
-<includeonly>
-
-{{#ifexist: /header_template
-| {{#if: {{/header_template}}
-  | {{/header_template}}
-  | {{/_default_header_template}}
+{{#ifexist: <%= page_title %>/header_template
+| {{#if: {{<%= page_title %>/header_template}}
+  | {{<%= page_title %>/header_template}}
+  | {{<%= page_title %>/_default_header_template}}
   }}
-| {{/_default_header_template}}
+| {{<%= page_title %>/_default_header_template}}
 }}
-
 <% comparison.diff_rows.each do |row| %>
-{{#ifexist: /<%= row.type %>_template
-| {{#if: {{/<%= row.type %>_template|<%= row.template_params %>}}
-  | {{/<%= row.type %>_template|<%= row.template_params %>}}
-  | {{/_default_<%= row.type %>_template|<%= row.template_params %>}}
+{{#ifexist: <%= page_title %>/<%= row.type %>_template
+| {{#if: {{<%= page_title %>/<%= row.type %>_template|<%= row.template_params %>}}
+  | {{<%= page_title %>/<%= row.type %>_template|<%= row.template_params %>}}
+  | {{<%= page_title %>/_default_<%= row.type %>_template|<%= row.template_params %>}}
   }}
-| {{/_default_<%= row.type %>_template|<%= row.template_params %>}}
+| {{<%= page_title %>/_default_<%= row.type %>_template|<%= row.template_params %>}}
 }}
 <% end %>
-
-{{#ifexist: /footer_template
-| {{#if: {{/footer_template}}
-  | {{/footer_template}}
-  | {{/_default_footer_template}}
+{{#ifexist: <%= page_title %>/footer_template
+| {{#if: {{<%= page_title %>/footer_template}}
+  | {{<%= page_title %>/footer_template}}
+  | {{<%= page_title %>/_default_footer_template}}
   }}
-| {{/_default_footer_template}}
+| {{<%= page_title %>/_default_footer_template}}
 }}
-
-</includeonly>
