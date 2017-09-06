@@ -62,7 +62,10 @@ module CompareWithWikidata
     def value_cells
       row_as_hash.drop(1).flat_map do |k, v|
         # Expand Wikidata IDs to templates.
+        # This expands cases where the whole cell is just a Q value:
         value = v.to_s.sub('http://www.wikidata.org/entity/', '').sub(/^Q(\d+)$/, '{{Q|\\1}}')
+        # This expands cases where the whole cell is a change in Q value:
+        value.sub!(/^Q(\d+)->Q(\d+)$/, '{{Q|\\1}}->{{Q|\\2}}')
         cell_class.new(key: k, value: value).cell_values
       end
     end
