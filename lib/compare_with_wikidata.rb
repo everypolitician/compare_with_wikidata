@@ -21,7 +21,7 @@ module CompareWithWikidata
 
     def initialize(mediawiki_site:, page_title:)
       @mediawiki_site = mediawiki_site
-      @page_title = page_title
+      @page_title = page_title.gsub('_', ' ')
     end
 
     def run!

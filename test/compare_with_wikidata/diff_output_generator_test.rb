@@ -89,5 +89,23 @@ describe 'CompareWithWikidata' do
         error.message.must_equal "The URL http://example.com/not-really-csv.csv couldn't be parsed as CSV. Is it really a valid CSV file?"
       end
     end
+
+    describe 'on instantiation' do
+      it 'normalizes underscores to spaces in the page title' do
+        generator = CompareWithWikidata::DiffOutputGenerator.new(
+          mediawiki_site: 'wikidata.example.com',
+          page_title: 'Some_interesting_page'
+        )
+        generator.send(:page_title).must_equal 'Some interesting page'
+      end
+
+      it 'leaves spaces intact in the page title' do
+        generator = CompareWithWikidata::DiffOutputGenerator.new(
+          mediawiki_site: 'wikidata.example.com',
+          page_title: 'Some interesting page'
+        )
+        generator.send(:page_title).must_equal 'Some interesting page'
+      end
+    end
   end
 end
