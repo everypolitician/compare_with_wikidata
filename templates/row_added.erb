@@ -1,4 +1,6 @@
 |-
-<% comparison.headers.each do |header| -%>
+| {{{<%= comparison.headers.first %>}}}
+<% comparison.headers.drop(1).each do |header| -%>
+|
 | {{{<%= header %>}}}
 <% end -%>

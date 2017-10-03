@@ -1,5 +1,7 @@
 {|class="wikitable sortable"
-<% comparison.headers.each do |header| -%>
-! <%= header %>
+! <%= comparison.headers.first %>
+<% comparison.headers.drop(1).each do |header| -%>
+! <%= header %> (SPARQL)
+! <%= header %> (CSV)
 <% end -%>
 |-

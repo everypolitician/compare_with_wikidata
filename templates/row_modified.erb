@@ -1,4 +1,5 @@
 |-
-<% comparison.headers.each do |header| -%>
-| {{{<%= header %>}}}
+| {{{<%= comparison.headers.first %>}}}
+<% comparison.headers.drop(1).each do |header| -%>
+{{#ifeq: {{{<%= header %>_sparql}}} | {{{<%= header %>_csv}}} | <td colspan="2">{{{<%= header %>}}}</td> | <td style="background:#fdfbe5">{{{<%= header %>_sparql}}}</td><td style="background:#fdfbe5">{{{<%= header %>_csv}}}</td>}}
 <% end -%>
