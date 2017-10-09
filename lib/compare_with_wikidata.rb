@@ -96,7 +96,7 @@ module CompareWithWikidata
     end
 
     def csv_page_title
-      "#{page_title}/csv"
+      "#{page_title}/comparison_csv"
     end
 
     def expanded_wikitext(page_title)
