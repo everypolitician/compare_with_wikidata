@@ -1,6 +1,7 @@
 require 'compare_with_wikidata/diff_row'
 
 require 'daff'
+require 'csv'
 
 module CompareWithWikidata
   class Comparison
@@ -16,6 +17,13 @@ module CompareWithWikidata
 
     def diff_rows
       @diff_rows ||= rows.map { |row| DiffRow.new(headers: headers, row: row) }
+    end
+
+    def to_csv
+      CSV.generate do |csv|
+        csv << headers
+        rows.each { |row| csv << row }
+      end
     end
 
     private

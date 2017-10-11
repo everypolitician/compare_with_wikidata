@@ -63,6 +63,8 @@ module CompareWithWikidata
         end
       end
 
+      client.edit(title: csv_page_title, text: comparison.to_csv)
+
       # Apparently everything went smoothly, so overwrite the /errors
       # subpage to make sure that it's empty.
       client.edit(title: errors_page_title, text: '')
@@ -91,6 +93,10 @@ module CompareWithWikidata
 
     def errors_page_title
       "#{page_title}/errors"
+    end
+
+    def csv_page_title
+      "#{page_title}/comparison_csv"
     end
 
     def expanded_wikitext(page_title)
