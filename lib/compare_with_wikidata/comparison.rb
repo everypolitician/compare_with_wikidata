@@ -2,12 +2,22 @@ require 'compare_with_wikidata/diff_row'
 
 require 'daff'
 require 'csv'
+require 'charlock_holmes/string'
 
 module CompareWithWikidata
+  def self.fix_encoding(daff_table)
+    daff_table.map do |row|
+      row.map do |cell|
+        next cell unless cell.instance_of? String
+        next cell unless cell.encoding == Encoding::ASCII_8BIT
+        cell.dup.detect_encoding!
+      end
+    end
+  end
 
   def self.daff_diff(data1, data2)
-    t1 = Daff::TableView.new(data1)
-    t2 = Daff::TableView.new(data2)
+    t1 = Daff::TableView.new(fix_encoding(data1))
+    t2 = Daff::TableView.new(fix_encoding(data2))
 
     alignment = Daff::Coopy.compare_tables(t1, t2).align
 
