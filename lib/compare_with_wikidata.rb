@@ -25,19 +25,8 @@ module CompareWithWikidata
     end
 
     def run!
-      sparql_query = expanded_wikitext("#{page_title}/sparql")
-      csv_url = expanded_wikitext("#{page_title}/csv url").strip
-
-      wikidata_records = CompareWithWikidata::MembershipList::Wikidata.new(sparql_query: sparql_query).to_a
-
-      external_csv = csv_from_url(csv_url)
-
-      common_headers = wikidata_records.first.keys & external_csv.first.keys
-      if common_headers.empty?
-        raise 'There are no common columns between the two sources. Please ensure the SPARQL and CSV share at least one common column.'
-      end
-
-      comparison = Comparison.new(sparql_items: wikidata_records, csv_items: external_csv, columns: common_headers)
+      # Note that the comparison is lazily evaluated when 'comparison'
+      # is evaluated from the binding in template rendering:
 
       always_overwrite = {
         '/stats' => 'templates/stats.erb',
@@ -113,6 +102,33 @@ module CompareWithWikidata
       raise MalformedCSVError.new("The URL #{file_or_url} couldn't be parsed as CSV. Is it really a valid CSV file?")
     rescue RestClient::Exception => e
       raise CSVDownloadError.new("There was an error fetching: #{file_or_url} - the error was: #{e.message}")
+    end
+
+    def sparql_query
+      expanded_wikitext("#{page_title}/sparql")
+    end
+
+    def csv_url
+      expanded_wikitext("#{page_title}/csv url").strip
+    end
+
+    def external_csv
+      csv_from_url(csv_url)
+    end
+
+    def wikidata_records
+      @wikidata_records ||= CompareWithWikidata::MembershipList::Wikidata.new(sparql_query: sparql_query).to_a
+    end
+
+    def comparison
+      return @comparison if @comparison
+
+      common_headers = wikidata_records.first.keys & external_csv.first.keys
+      if common_headers.empty?
+        raise 'There are no common columns between the two sources. Please ensure the SPARQL and CSV share at least one common column.'
+      end
+
+      @comparison = Comparison.new(sparql_items: wikidata_records, csv_items: external_csv, columns: common_headers)
     end
   end
 end
