@@ -3,6 +3,7 @@ require 'compare_with_wikidata/version'
 require 'compare_with_wikidata/membership_list/wikidata'
 require 'compare_with_wikidata/comparison'
 
+require 'charlock_holmes/string'
 require 'csv'
 require 'erb'
 require 'mediawiki_api'
@@ -96,8 +97,15 @@ module CompareWithWikidata
       result.data['wikitext']
     end
 
+    def fix_encoding(s)
+      return s if s.encoding == Encoding::UTF_8
+      return s.encode(Encoding::UTF_8) unless s.encoding == Encoding::ASCII_8BIT
+      s.dup.detect_encoding!.encode('UTF-8')
+    end
+
     def csv_from_url(file_or_url)
-      CSV.parse(RestClient.get(file_or_url).to_s, headers: true, header_converters: :symbol, converters: nil).map(&:to_h)
+      csv_text = RestClient.get(file_or_url).to_s
+      CSV.parse(fix_encoding(csv_text), headers: true, header_converters: :symbol, converters: nil).map(&:to_h)
     rescue CSV::MalformedCSVError
       raise MalformedCSVError.new("The URL #{file_or_url} couldn't be parsed as CSV. Is it really a valid CSV file?")
     rescue RestClient::Exception => e

@@ -41,6 +41,27 @@ describe 'CompareWithWikidata' do
         error.message.must_equal 'There was an error fetching: http://example.com/errors - the error was: 500 Internal Server Error'
       end
 
+      it 'should guess an encoding and convert to UTF-8 for responses with no defined encoding' do
+        unmarked_latin1_csv = "id,name\r\n1,Zoë\r\n".encode(Encoding::ISO8859_1)
+        unmarked_latin1_csv.force_encoding(Encoding::ASCII_8BIT)
+        stub_request(:get, 'http://example.com/no-charset-directive.csv').to_return(
+          body: unmarked_latin1_csv
+        )
+        result = subject.send(:csv_from_url, 'http://example.com/no-charset-directive.csv')
+        result.must_equal [{ id: '1', name: 'Zoë' }]
+        result[0][:name].encoding.must_equal(Encoding::UTF_8)
+      end
+
+      it 'should convert data from non-UTF-8 character sets to UTF-8' do
+        latin1_csv = "id,name\r\n1,Zoë\r\n".encode(Encoding::ISO8859_1)
+        stub_request(:get, 'http://example.com/latin-1-with-charset-directive.csv').to_return(
+          body: latin1_csv
+        )
+        result = subject.send(:csv_from_url, 'http://example.com/latin-1-with-charset-directive.csv')
+        result.must_equal [{ id: '1', name: 'Zoë' }]
+        result[0][:name].encoding.must_equal(Encoding::UTF_8)
+      end
+
       it 'should parse a minimal HTML document without commas or quotes as a single column' do
         # This is a weird example, but some minimal valid HTML
         # documents are also valid single column CSV files, and we
@@ -105,6 +126,25 @@ describe 'CompareWithWikidata' do
           page_title: 'Some interesting page'
         )
         generator.send(:page_title).must_equal 'Some interesting page'
+      end
+    end
+
+    describe 'creating comparisons' do
+      it 'succeeds even when the CSV is returned without the charset directive' do
+        unmarked_latin1_csv = "id,name\r\n1,Zoë\r\n".encode(Encoding::ISO8859_1)
+        unmarked_latin1_csv.force_encoding(Encoding::ASCII_8BIT)
+        stub_request(:get, 'http://example.com/no-charset-directive.csv').to_return(
+          body: unmarked_latin1_csv
+        )
+        subject.stub(
+          :wikidata_records,
+          [{ item: 'http://www.wikidata.org/entity/Q45382898', name: 'Zoey' }]
+        ) do
+          subject.stub(:csv_url, 'http://example.com/no-charset-directive.csv') do
+            result = subject.send(:comparison)
+            result.send(:rows).must_equal [['+++', 'Zoë'], ['---', 'Zoey']]
+          end
+        end
       end
     end
   end
