@@ -69,6 +69,8 @@ module CompareWithWikidata
       # subpage to make sure that it's empty.
       client.edit(title: errors_page_title, text: '')
 
+    rescue MediawikiApi::EditError => e
+      client.edit(title: errors_page_title, text: "<nowiki>#{e.message}: #{e.response.data}</nowiki>")
     rescue StandardError => e
       client.edit(title: errors_page_title, text: "<nowiki>#{e.message}</nowiki>")
     ensure
