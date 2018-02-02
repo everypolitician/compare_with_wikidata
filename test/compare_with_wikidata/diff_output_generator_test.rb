@@ -131,18 +131,18 @@ describe 'CompareWithWikidata' do
 
     describe 'creating comparisons' do
       it 'succeeds even when the CSV is returned without the charset directive' do
-        unmarked_latin1_csv = "id,name\r\n1,Zoë\r\n".encode(Encoding::ISO8859_1)
+        unmarked_latin1_csv = "item,name\r\nQ45382898,Zoë\r\n".encode(Encoding::UTF_8)
         unmarked_latin1_csv.force_encoding(Encoding::ASCII_8BIT)
         stub_request(:get, 'http://example.com/no-charset-directive.csv').to_return(
           body: unmarked_latin1_csv
         )
         subject.stub(
           :wikidata_records,
-          [{ item: 'http://www.wikidata.org/entity/Q45382898', name: 'Zoey' }]
+          [{ item: 'http://www.wikidata.org/entity/Q45382898', name: 'Zoë' }]
         ) do
           subject.stub(:csv_url, 'http://example.com/no-charset-directive.csv') do
             result = subject.send(:comparison)
-            result.send(:rows).must_equal [['+++', 'Zoë'], ['---', 'Zoey']]
+            result.send(:rows).must_equal []
           end
         end
       end
