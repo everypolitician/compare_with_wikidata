@@ -12,8 +12,7 @@ describe 'CompareWithWikidata' do
     describe 'csv_from_url' do
       it 'should produce a sensible response from genuine CSV' do
         stub_request(:get, 'http://example.com/real.csv').to_return(
-          body: 'heading A,"heading B",heading C' "\r\n" \
-                '1,2,3' "\r\n"
+          body: %(heading A,"heading B",heading C\r\n1,2,3\r\n)
         )
         result = subject.send(:csv_from_url, 'http://example.com/real.csv')
         result.must_equal [
