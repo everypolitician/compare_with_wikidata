@@ -10,7 +10,7 @@ module CompareWithWikidata
         [
           [key, value],
           ["#{key}_sparql", sparql_value],
-          ["#{key}_csv", csv_value]
+          ["#{key}_csv", csv_value],
         ]
       end
 

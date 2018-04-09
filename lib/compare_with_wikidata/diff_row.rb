@@ -11,7 +11,7 @@ module CompareWithWikidata
       {
         '+++' => 'row_added',
         '---' => 'row_removed',
-        '->' => 'row_modified',
+        '->'  => 'row_modified',
       }[change_type]
     end
 
