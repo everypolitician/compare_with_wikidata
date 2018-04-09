@@ -25,7 +25,7 @@ describe 'CompareWithWikidata' do
           status: [404, 'No file found. Nothing at all.']
         )
         error = assert_raises Exception do
-          result = subject.send(:csv_from_url, 'http://example.com/non-existent')
+          subject.send(:csv_from_url, 'http://example.com/non-existent')
         end
         error.message.must_equal 'There was an error fetching: http://example.com/non-existent - the error was: 404 Not Found'
       end
@@ -35,7 +35,7 @@ describe 'CompareWithWikidata' do
           status: [500, 'Our fault. Not your fault.']
         )
         error = assert_raises Exception do
-          result = subject.send(:csv_from_url, 'http://example.com/errors')
+          subject.send(:csv_from_url, 'http://example.com/errors')
         end
         error.message.must_equal 'There was an error fetching: http://example.com/errors - the error was: 500 Internal Server Error'
       end
