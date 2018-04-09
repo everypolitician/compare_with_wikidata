@@ -59,8 +59,9 @@ module CompareWithWikidata
       row_as_hash.take(1)
     end
 
-    def templatize_if_item_id(s)
-      s.sub(/^Q(\d+)$/, '{{Q|\\1}}')
+    # TODO: move this onto String or a suitable subclass
+    def templatize_if_item_id(string)
+      string.sub(/^Q(\d+)$/, '{{Q|\\1}}')
     end
 
     def value_cells
