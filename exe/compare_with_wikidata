@@ -2,7 +2,6 @@
 require 'compare_with_wikidata'
 require 'uri'
 
-
 if ARGV.size != 1
   abort "Usage: #{$PROGRAM_NAME} REFRESH_URL_OR_QUERYSTRING
 e.g. compare_with_wikidata 'mediawiki_site=www.wikidata.org&page_title=User%3AMhl20%2FFibonacci_test'

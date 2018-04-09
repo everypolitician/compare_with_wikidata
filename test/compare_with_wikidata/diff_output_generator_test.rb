@@ -2,41 +2,40 @@ require 'test_helper'
 
 describe 'CompareWithWikidata' do
   describe 'DiffOutputGenerator' do
-    subject {
+    subject do
       CompareWithWikidata::DiffOutputGenerator.new(
         mediawiki_site: 'wikidata.example.com',
-        page_title: 'SomePage'
+        page_title:     'SomePage'
       )
-    }
+    end
 
     describe 'csv_from_url' do
       it 'should produce a sensible response from genuine CSV' do
         stub_request(:get, 'http://example.com/real.csv').to_return(
-          body: 'heading A,"heading B",heading C' "\r\n" \
-                '1,2,3' "\r\n"
+          body: %(heading A,"heading B",heading C\r\n1,2,3\r\n)
         )
         result = subject.send(:csv_from_url, 'http://example.com/real.csv')
         result.must_equal [
-          {heading_a: "1", heading_b: "2", heading_c: "3"}
+          { heading_a: '1', heading_b: '2', heading_c: '3' },
         ]
       end
 
       it 'should produce a helpful exception message on a 404 error' do
         stub_request(:get, 'http://example.com/non-existent').to_return(
-          status: [404, "No file found. Nothing at all."]
+          status: [404, 'No file found. Nothing at all.']
         )
         error = assert_raises Exception do
-          result = subject.send(:csv_from_url, 'http://example.com/non-existent')
+          subject.send(:csv_from_url, 'http://example.com/non-existent')
         end
         error.message.must_equal 'There was an error fetching: http://example.com/non-existent - the error was: 404 Not Found'
       end
 
       it 'should produce a helpful exception message on a 404 error' do
         stub_request(:get, 'http://example.com/errors').to_return(
-          status: [500, "Our fault. Not your fault."]
+          status: [500, 'Our fault. Not your fault.']
         )
         error = assert_raises Exception do
-          result = subject.send(:csv_from_url, 'http://example.com/errors')
+          subject.send(:csv_from_url, 'http://example.com/errors')
         end
         error.message.must_equal 'There was an error fetching: http://example.com/errors - the error was: 500 Internal Server Error'
       end
@@ -55,17 +54,18 @@ describe 'CompareWithWikidata' do
   <body><p></p>
   </body>
 </html>
-')
+'
+        )
         result = subject.send(:csv_from_url, 'http://example.com/html-but-also-valid-csv.csv')
         result.must_equal [
-          {:doctype_html=>"<html lang=en>"},
-          {:doctype_html=>"  <head>"},
-          {:doctype_html=>"    <meta charset=utf-8>"},
-          {:doctype_html=>"    <title>A minimal HTML document.</title>"},
-          {:doctype_html=>"  </head>"},
-          {:doctype_html=>"  <body><p></p>"},
-          {:doctype_html=>"  </body>"},
-          {:doctype_html=>"</html>"}
+          { doctype_html: '<html lang=en>' },
+          { doctype_html: '  <head>' },
+          { doctype_html: '    <meta charset=utf-8>' },
+          { doctype_html: '    <title>A minimal HTML document.</title>' },
+          { doctype_html: '  </head>' },
+          { doctype_html: '  <body><p></p>' },
+          { doctype_html: '  </body>' },
+          { doctype_html: '</html>' },
         ]
       end
 
@@ -82,7 +82,8 @@ describe 'CompareWithWikidata' do
     <title>A minimal HTML that contains some "quotation marks".</title>
   </head>
 </html>
-')
+'
+        )
         error = assert_raises CompareWithWikidata::MalformedCSVError do
           subject.send(:csv_from_url, 'http://example.com/not-really-csv.csv')
         end
@@ -94,7 +95,7 @@ describe 'CompareWithWikidata' do
       it 'normalizes underscores to spaces in the page title' do
         generator = CompareWithWikidata::DiffOutputGenerator.new(
           mediawiki_site: 'wikidata.example.com',
-          page_title: 'Some_interesting_page'
+          page_title:     'Some_interesting_page'
         )
         generator.send(:page_title).must_equal 'Some interesting page'
       end
@@ -102,7 +103,7 @@ describe 'CompareWithWikidata' do
       it 'leaves spaces intact in the page title' do
         generator = CompareWithWikidata::DiffOutputGenerator.new(
           mediawiki_site: 'wikidata.example.com',
-          page_title: 'Some interesting page'
+          page_title:     'Some interesting page'
         )
         generator.send(:page_title).must_equal 'Some interesting page'
       end

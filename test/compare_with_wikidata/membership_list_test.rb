@@ -18,13 +18,13 @@ describe 'CompareWithWikidata' do
         )
         wikidata.to_a.must_equal [
           {
-            :person=>"http://www.wikidata.org/entity/Q42",
-            :value=>"http://www.wikidata.org/entity/Q691283"
+            person: 'http://www.wikidata.org/entity/Q42',
+            value:  'http://www.wikidata.org/entity/Q691283',
           },
           {
-            :person=>"http://www.wikidata.org/entity/Q42",
-            :value=>"http://www.wikidata.org/entity/Q4961791"
-          }
+            person: 'http://www.wikidata.org/entity/Q42',
+            value:  'http://www.wikidata.org/entity/Q4961791',
+          },
         ]
       end
 
