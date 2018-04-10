@@ -19,17 +19,13 @@ module CompareWithWikidata
       attr_reader :key, :raw_value
 
       def value
-        # Expand Wikidata item IDs to templated versions. (These might
-        # be on either side of a '->' if the cell represents a change.)
-        #   TODO: handle that case separately in CellModified
-        raw_value.to_s.sub('http://www.wikidata.org/entity/', '')
-                 .split('->').map { |e| templatize_if_item_id(e) }.join('->')
+        CellValue.new(raw_value).templatized
       end
+    end
 
-      # TODO: move this onto String or a suitable subclass
-      #  (possibly create a Value class to handle it)
-      def templatize_if_item_id(string)
-        string.sub(/^Q(\d+)$/, '{{Q|\\1}}')
+    class CellValue < String
+      def templatized
+        sub('http://www.wikidata.org/entity/', '').sub(/^Q(\d+)$/, '{{Q|\\1}}')
       end
     end
 
@@ -55,17 +51,21 @@ module CompareWithWikidata
 
     class CellModified < Cell
       def sparql_value
-        split_value.first
+        CellValue.new(split_value.first).templatized
       end
 
       def csv_value
-        split_value.last
+        CellValue.new(split_value.last).templatized
+      end
+
+      def value
+        [sparql_value, csv_value].join('->')
       end
 
       private
 
       def split_value
-        value.split('->', 2)
+        raw_value.split('->', 2)
       end
     end
   end
