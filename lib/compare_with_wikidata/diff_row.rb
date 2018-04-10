@@ -59,18 +59,9 @@ module CompareWithWikidata
       row_as_hash.take(1)
     end
 
-    # TODO: move this onto String or a suitable subclass
-    def templatize_if_item_id(string)
-      string.sub(/^Q(\d+)$/, '{{Q|\\1}}')
-    end
-
     def value_cells
       row_as_hash.drop(1).flat_map do |k, v|
-        value = v.to_s.sub('http://www.wikidata.org/entity/', '')
-        # Expand Wikidata item IDs to templated versions. (These might
-        # be on either side of a '->' if the cell represents a change.)
-        value = value.split('->').map { |e| templatize_if_item_id(e) }.join('->')
-        cell_class.new(key: k, value: value).cell_values
+        cell_class.new(key: k, value: v).cell_values
       end
     end
   end
