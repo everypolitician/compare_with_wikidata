@@ -3,7 +3,7 @@ module CompareWithWikidata
     class Cell
       def initialize(key:, value:)
         @key = key
-        @value = value
+        @raw_value = value
       end
 
       def cell_values
@@ -16,7 +16,21 @@ module CompareWithWikidata
 
       private
 
-      attr_reader :key, :value
+      attr_reader :key, :raw_value
+
+      def value
+        # Expand Wikidata item IDs to templated versions. (These might
+        # be on either side of a '->' if the cell represents a change.)
+        #   TODO: handle that case separately in CellModified
+        raw_value.to_s.sub('http://www.wikidata.org/entity/', '')
+                 .split('->').map { |e| templatize_if_item_id(e) }.join('->')
+      end
+
+      # TODO: move this onto String or a suitable subclass
+      #  (possibly create a Value class to handle it)
+      def templatize_if_item_id(string)
+        string.sub(/^Q(\d+)$/, '{{Q|\\1}}')
+      end
     end
 
     class CellAdded < Cell
