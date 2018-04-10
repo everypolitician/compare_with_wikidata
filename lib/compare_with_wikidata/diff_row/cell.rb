@@ -59,13 +59,17 @@ module CompareWithWikidata
       end
 
       def value
-        [sparql_value, csv_value].join('->')
+        [sparql_value, csv_value].join(separator)
       end
 
       private
 
+      def separator
+        '->'
+      end
+
       def split_value
-        raw_value.split('->', 2)
+        raw_value.split(separator, 2)
       end
     end
   end
