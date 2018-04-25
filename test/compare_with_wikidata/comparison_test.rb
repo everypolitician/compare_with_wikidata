@@ -18,6 +18,12 @@ describe CompareWithWikidata::Comparison do
     it 'returns DiffRow instances from diff_rows' do
       subject.diff_rows.first.class.must_equal CompareWithWikidata::DiffRow
     end
+
+    it 'constructs a CSV with the one difference' do
+      subject.to_csv.lines.count.must_equal 2
+      subject.to_csv.lines.first.must_equal "@@,id,name\n"
+      subject.to_csv.lines.last.must_equal "+++,3,Charlie\n"
+    end
   end
 
   describe 'SPARQL items with Wikidata URL prefix' do
@@ -32,6 +38,11 @@ describe CompareWithWikidata::Comparison do
 
     it 'ignores the Wikidata URL prefix' do
       subject.diff_rows.size.must_equal 0
+    end
+
+    it 'constructs a CSV with no differences rows' do
+      subject.to_csv.lines.count.must_equal 1
+      subject.to_csv.lines.first.must_equal "@@,id,name\n"
     end
   end
 end
