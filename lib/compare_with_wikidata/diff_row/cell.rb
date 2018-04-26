@@ -3,7 +3,7 @@ module CompareWithWikidata
     class Cell
       def initialize(key:, value:)
         @key = key
-        @value = value
+        @raw_value = value
       end
 
       def cell_values
@@ -16,7 +16,17 @@ module CompareWithWikidata
 
       private
 
-      attr_reader :key, :value
+      attr_reader :key, :raw_value
+
+      def value
+        CellValue.new(raw_value).templatized
+      end
+    end
+
+    class CellValue < String
+      def templatized
+        sub('http://www.wikidata.org/entity/', '').sub(/^Q(\d+)$/, '{{Q|\\1}}')
+      end
     end
 
     class CellAdded < Cell
@@ -41,17 +51,25 @@ module CompareWithWikidata
 
     class CellModified < Cell
       def sparql_value
-        split_value.first
+        CellValue.new(split_value.first).templatized
       end
 
       def csv_value
-        split_value.last
+        CellValue.new(split_value.last).templatized
+      end
+
+      def value
+        [sparql_value, csv_value].join(separator)
       end
 
       private
 
+      def separator
+        '->'
+      end
+
       def split_value
-        value.split('->', 2)
+        raw_value.split(separator, 2)
       end
     end
   end
