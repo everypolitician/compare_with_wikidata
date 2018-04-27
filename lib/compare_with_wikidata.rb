@@ -118,14 +118,14 @@ module CompareWithWikidata
     end
 
     def comparison
-      return @comparison if @comparison
+      @comparison ||= begin
+        common_headers = wikidata_records.first.keys & external_csv.first.keys
+        if common_headers.empty?
+          raise 'There are no common columns between the two sources. Please ensure the SPARQL and CSV share at least one common column.'
+        end
 
-      common_headers = wikidata_records.first.keys & external_csv.first.keys
-      if common_headers.empty?
-        raise 'There are no common columns between the two sources. Please ensure the SPARQL and CSV share at least one common column.'
+        Comparison.new(sparql_items: wikidata_records, csv_items: external_csv, columns: common_headers)
       end
-
-      @comparison = Comparison.new(sparql_items: wikidata_records, csv_items: external_csv, columns: common_headers)
     end
   end
 end
