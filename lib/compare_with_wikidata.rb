@@ -19,8 +19,8 @@ module CompareWithWikidata
     WIKI_USERNAME = ENV['WIKI_USERNAME']
     WIKI_PASSWORD = ENV['WIKI_PASSWORD']
 
-    def initialize(mediawiki_site:, page_title:)
-      @mediawiki_site = mediawiki_site
+    def initialize(mediawiki_client:, page_title:)
+      @client = mediawiki_client
       @page_title = page_title.tr('_', ' ')
     end
 
@@ -48,7 +48,7 @@ module CompareWithWikidata
           puts "# #{title}\n#{wikitext}"
         else
           client.edit(title: title, text: wikitext)
-          puts "Done: Updated #{title} on #{mediawiki_site}"
+          puts "Done: Updated #{title}"
         end
       end
 
@@ -67,15 +67,7 @@ module CompareWithWikidata
 
     private
 
-    attr_reader :mediawiki_site, :page_title
-
-    def client
-      abort 'Please set WIKI_USERNAME and WIKI_PASSWORD' if WIKI_USERNAME.to_s.empty? || WIKI_PASSWORD.to_s.empty?
-      @client ||= MediawikiApi::Client.new("https://#{mediawiki_site}/w/api.php").tap do |c|
-        result = c.log_in(WIKI_USERNAME, WIKI_PASSWORD)
-        raise "MediawikiApi::Client#log_in failed: #{result}" unless result['result'] == 'Success'
-      end
-    end
+    attr_reader :client, :page_title
 
     def errors_page_title
       "#{page_title}/errors"

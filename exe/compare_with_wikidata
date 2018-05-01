@@ -18,5 +18,12 @@ options = URI.decode_www_form(query).map { |k, v| [k.to_sym, v] }.to_h
 
 warn "Running with options: #{options.inspect}" if ENV.key?('DEBUG')
 
-diff_output_generator = CompareWithWikidata::DiffOutputGenerator.new(**options)
+abort 'Please set WIKI_USERNAME and WIKI_PASSWORD' if ENV['WIKI_USERNAME'].to_s.empty? || ENV['WIKI_PASSWORD'].to_s.empty?
+
+client = MediawikiApi::Client.new("https://#{options[:mediawiki_site]}/w/api.php").tap do |c|
+  result = c.log_in(ENV['WIKI_USERNAME'], ENV['WIKI_PASSWORD'])
+  raise "MediawikiApi::Client#log_in failed: #{result}" unless result['result'] == 'Success'
+end
+
+diff_output_generator = CompareWithWikidata::DiffOutputGenerator.new(mediawiki_client: client, page_title: options[:page_title])
 diff_output_generator.run!
