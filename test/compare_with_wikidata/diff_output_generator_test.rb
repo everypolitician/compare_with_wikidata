@@ -2,9 +2,10 @@ require 'test_helper'
 
 describe 'CompareWithWikidata' do
   describe 'DiffOutputGenerator' do
+    let(:mock_client) { Minitest::Mock.new }
     subject do
       CompareWithWikidata::DiffOutputGenerator.new(
-        mediawiki_client: Minitest::Mock.new,
+        mediawiki_client: mock_client,
         page_title:       'SomePage'
       )
     end
@@ -106,6 +107,30 @@ describe 'CompareWithWikidata' do
           page_title:       'Some interesting page'
         )
         generator.send(:page_title).must_equal 'Some interesting page'
+      end
+    end
+
+    describe 'run!' do
+      it 'interacts with the mediawiki_client as expected' do
+        mock_result = Minitest::Mock.new
+        mock_result.expect(:success?, true)
+        mock_result.expect(:body, '')
+        mock_client.expect(:get_wikitext, mock_result, ['SomePage/sparql'])
+        mock_client.expect(:expanded_wikitext, true, [])
+        mock_client.expect(
+          :edit,
+          true,
+          [
+            {
+              title: 'SomePage/errors',
+              text: '<nowiki>unmocked method :get_wikitext, expected one of [:action, :edit]</nowiki>'
+            }
+          ]
+        )
+        mock_client.expect(:action, true, [:purge, { titles: ['SomePage'] }])
+        mock_client.expect(:action, true, [:expandtemplates, { text: '', prop: :wikitext, title: 'SomePage/sparql' }])
+        subject.run!
+        mock_client.verify
       end
     end
   end
