@@ -19,8 +19,9 @@ And then execute:
 ### Update a prompt on a given page
 
 ```ruby
+client = CompareWithWikidata::MediawikiClient.new(site: 'www.wikidata.org', username: 'My Bot', password: 'password')
 CompareWithWikidata::DiffOutputGenerator.new(
-  mediawiki_site: 'www.wikidata.org',
+  mediawiki_client: client,
   page_title: 'User:Chris_Mytton/sandbox/prompts/heads_of_government'
 ).run!
 ```
