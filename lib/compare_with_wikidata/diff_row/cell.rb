@@ -23,10 +23,18 @@ module CompareWithWikidata
       end
     end
 
-    class CellValue < String
-      def templatized
-        sub('http://www.wikidata.org/entity/', '').sub(/^Q(\d+)$/, '{{Q|\\1}}')
+    class CellValue
+      def initialize(value)
+        @value = value
       end
+
+      def templatized
+        value.sub('http://www.wikidata.org/entity/', '').sub(/^Q(\d+)$/, '{{Q|\\1}}') if value
+      end
+
+      private
+
+      attr_reader :value
     end
 
     class CellAdded < Cell
@@ -59,7 +67,7 @@ module CompareWithWikidata
       end
 
       def value
-        [sparql_value, csv_value].join(separator)
+        [sparql_value, csv_value].compact.join(separator)
       end
 
       private

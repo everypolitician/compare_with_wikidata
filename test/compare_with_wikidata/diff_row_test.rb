@@ -26,5 +26,10 @@ describe CompareWithWikidata::DiffRow do
       row = CompareWithWikidata::DiffRow.new(headers: %w[@@ item], row: ['->', 'NULL->Q1572486'])
       row.template_params.must_equal '@@=->|item=NULL->{{Q|1572486}}|item_sparql=NULL|item_csv={{Q|1572486}}'
     end
+
+    it 'handles cells with a blank value' do
+      row = CompareWithWikidata::DiffRow.new(headers: %w[@@ start_date], row: ['->', ''])
+      row.template_params.must_equal '@@=->|start_date=|start_date_sparql=|start_date_csv='
+    end
   end
 end
