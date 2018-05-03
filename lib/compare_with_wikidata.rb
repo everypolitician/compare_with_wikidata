@@ -1,11 +1,11 @@
 require 'compare_with_wikidata/version'
 
+require 'compare_with_wikidata/mediawiki_client'
 require 'compare_with_wikidata/membership_list/wikidata'
 require 'compare_with_wikidata/comparison'
 
 require 'csv'
 require 'erb'
-require 'mediawiki_api'
 
 module CompareWithWikidata
   class MalformedCSVError < StandardError
@@ -19,8 +19,8 @@ module CompareWithWikidata
     WIKI_USERNAME = ENV['WIKI_USERNAME']
     WIKI_PASSWORD = ENV['WIKI_PASSWORD']
 
-    def initialize(mediawiki_site:, page_title:)
-      @mediawiki_site = mediawiki_site
+    def initialize(mediawiki_client:, page_title:)
+      @mediawiki_client = mediawiki_client
       @page_title = page_title.tr('_', ' ')
     end
 
@@ -47,35 +47,25 @@ module CompareWithWikidata
         if ENV.key?('DEBUG')
           puts "# #{title}\n#{wikitext}"
         else
-          client.edit(title: title, text: wikitext)
+          mediawiki_client.edit(title: title, text: wikitext)
           puts "Done: Updated #{title} on #{mediawiki_site}"
         end
       end
 
-      client.edit(title: csv_page_title, text: comparison.to_csv)
+      mediawiki_client.edit(title: csv_page_title, text: comparison.to_csv)
 
       # Apparently everything went smoothly, so overwrite the /errors
       # subpage to make sure that it's empty.
-      client.edit(title: errors_page_title, text: '')
-    rescue StandardError => e
-      client.edit(title: errors_page_title, text: "<nowiki>#{e.message}</nowiki>")
+      mediawiki_client.edit(title: errors_page_title, text: '')
     ensure
       # Purge the main page, so it refreshes the subpages, even if
       # there was an exception.
-      client.action(:purge, titles: [page_title])
+      mediawiki_client.purge(titles: [page_title])
     end
 
     private
 
-    attr_reader :mediawiki_site, :page_title
-
-    def client
-      abort 'Please set WIKI_USERNAME and WIKI_PASSWORD' if WIKI_USERNAME.to_s.empty? || WIKI_PASSWORD.to_s.empty?
-      @client ||= MediawikiApi::Client.new("https://#{mediawiki_site}/w/api.php").tap do |c|
-        result = c.log_in(WIKI_USERNAME, WIKI_PASSWORD)
-        raise "MediawikiApi::Client#log_in failed: #{result}" unless result['result'] == 'Success'
-      end
-    end
+    attr_reader :mediawiki_client, :page_title
 
     def errors_page_title
       "#{page_title}/errors"
@@ -86,10 +76,10 @@ module CompareWithWikidata
     end
 
     def expanded_wikitext(page_title)
-      result = client.get_wikitext(page_title)
+      result = mediawiki_client.wikitext(title: page_title)
       raise "#{page_title} doesn't exist, please create it." unless result.success?
       wikitext = result.body
-      result = client.action(:expandtemplates, text: wikitext, prop: :wikitext, title: page_title)
+      result = mediawiki_client.expand_templates(text: wikitext, title: page_title)
       result.data['wikitext']
     end
 

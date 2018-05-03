@@ -2,10 +2,12 @@ require 'test_helper'
 
 describe 'CompareWithWikidata' do
   describe 'DiffOutputGenerator' do
+    let(:mock_client) { Minitest::Mock.new }
+
     subject do
       CompareWithWikidata::DiffOutputGenerator.new(
-        mediawiki_site: 'wikidata.example.com',
-        page_title:     'SomePage'
+        mediawiki_client: mock_client,
+        page_title:       'SomePage'
       )
     end
 
@@ -94,18 +96,27 @@ describe 'CompareWithWikidata' do
     describe 'on instantiation' do
       it 'normalizes underscores to spaces in the page title' do
         generator = CompareWithWikidata::DiffOutputGenerator.new(
-          mediawiki_site: 'wikidata.example.com',
-          page_title:     'Some_interesting_page'
+          mediawiki_client: mock_client,
+          page_title:       'Some_interesting_page'
         )
         generator.send(:page_title).must_equal 'Some interesting page'
       end
 
       it 'leaves spaces intact in the page title' do
         generator = CompareWithWikidata::DiffOutputGenerator.new(
-          mediawiki_site: 'wikidata.example.com',
-          page_title:     'Some interesting page'
+          mediawiki_client: mock_client,
+          page_title:       'Some interesting page'
         )
         generator.send(:page_title).must_equal 'Some interesting page'
+      end
+    end
+
+    describe '#run!' do
+      it 'works' do
+        mock_client.expect(:purge, true, [{ titles: ['SomePage'] }])
+        mock_client.expect(:edit, true, [{ titles: ['SomePage'] }])
+        mock_client.expect(:wikitext, true, [{ title: 'SomePage/sparql' }])
+        subject.run!
       end
     end
   end
