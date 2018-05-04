@@ -29,18 +29,18 @@ module CompareWithWikidata
       # is evaluated from the binding in template rendering:
 
       always_overwrite = {
-        '/stats'                          => 'stats.erb',
-        '/comparison'                     => 'comparison.erb',
-        '/_default_header_template'       => 'header_template.erb',
-        '/_default_footer_template'       => 'footer_template.erb',
-        '/_default_row_added_template'    => 'row_added.erb',
-        '/_default_row_removed_template'  => 'row_removed.erb',
-        '/_default_row_modified_template' => 'row_modified.erb',
-        '/_default_stats_template'        => 'stats_template.erb',
+        stats:           '/stats',
+        comparison:      '/comparison',
+        header_template: '/_default_header_template',
+        footer_template: '/_default_footer_template',
+        row_added:       '/_default_row_added_template',
+        row_removed:     '/_default_row_removed_template',
+        row_modified:    '/_default_row_modified_template',
+        stats_template:  '/_default_stats_template',
       }
 
-      always_overwrite.each do |subpage, template_file|
-        pathname = Pathname.new('templates') + template_file
+      always_overwrite.each do |template_file, subpage|
+        pathname = Pathname.new("templates/#{template_file}.erb")
         template = ERB.new(pathname.read, nil, '-')
         dont_edit = "<!-- WARNING: This template is generated automatically. Any changes will be overwritten the next time the prompt is refreshed. -->\n"
         wikitext = dont_edit + template.result(binding)
