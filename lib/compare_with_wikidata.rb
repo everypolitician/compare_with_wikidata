@@ -52,17 +52,18 @@ module CompareWithWikidata
         end
       end
 
-      client.edit(title: csv_page_title, text: comparison.to_csv)
+      client.edit(title: csv_page_title, text: comparison.to_csv) unless ENV.key?('DEBUG')
 
       # Apparently everything went smoothly, so overwrite the /errors
       # subpage to make sure that it's empty.
-      client.edit(title: errors_page_title, text: '')
+      client.edit(title: errors_page_title, text: '') unless ENV.key?('DEBUG')
     rescue StandardError => e
+      raise if ENV.key?('DEBUG')
       client.edit(title: errors_page_title, text: "<nowiki>#{e.message}</nowiki>")
     ensure
       # Purge the main page, so it refreshes the subpages, even if
       # there was an exception.
-      client.action(:purge, titles: [page_title])
+      client.action(:purge, titles: [page_title]) unless ENV.key?('DEBUG')
     end
 
     private
