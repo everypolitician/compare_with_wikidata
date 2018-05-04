@@ -2,18 +2,12 @@ require 'compare_with_wikidata/version'
 
 require 'compare_with_wikidata/membership_list/wikidata'
 require 'compare_with_wikidata/comparison'
+require 'compare_with_wikidata/csv_from_url'
 
-require 'csv'
 require 'erb'
 require 'mediawiki_api'
 
 module CompareWithWikidata
-  class MalformedCSVError < StandardError
-  end
-
-  class CSVDownloadError < StandardError
-  end
-
   class DiffOutputGenerator
     WIKI_TEMPLATE_NAME = 'Compare Wikidata with CSV'.freeze
     WIKI_USERNAME = ENV['WIKI_USERNAME']
@@ -94,14 +88,6 @@ module CompareWithWikidata
       result.data['wikitext']
     end
 
-    def csv_from_url(file_or_url)
-      CSV.parse(RestClient.get(file_or_url).to_s, headers: true, header_converters: :symbol, converters: nil).map(&:to_h)
-    rescue CSV::MalformedCSVError
-      raise MalformedCSVError, "The URL #{file_or_url} couldn't be parsed as CSV. Is it really a valid CSV file?"
-    rescue RestClient::Exception => e
-      raise CSVDownloadError, "There was an error fetching: #{file_or_url} - the error was: #{e.message}"
-    end
-
     def sparql_query
       expanded_wikitext("#{page_title}/sparql")
     end
@@ -111,7 +97,7 @@ module CompareWithWikidata
     end
 
     def external_csv
-      csv_from_url(csv_url)
+      CSVFromURL.new(csv_url).parsed
     end
 
     def wikidata_records
