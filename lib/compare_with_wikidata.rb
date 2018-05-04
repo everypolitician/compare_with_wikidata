@@ -14,6 +14,34 @@ module CompareWithWikidata
   class CSVDownloadError < StandardError
   end
 
+  class Template
+    def initialize(file:, page:, context:)
+      @file = file
+      @page = page
+      @context = context
+    end
+
+    def wikitext
+      EDIT_WARNING + erb.result(context)
+    end
+
+    attr_reader :comparison
+
+    private
+
+    attr_reader :file, :page, :context
+
+    EDIT_WARNING = "<!-- WARNING: This template is generated automatically. Any changes will be overwritten the next time the prompt is refreshed. -->\n".freeze
+
+    def pathname
+      Pathname.new("templates/#{file}.erb")
+    end
+
+    def erb
+      ERB.new(pathname.read, nil, '-')
+    end
+  end
+
   class DiffOutputGenerator
     WIKI_TEMPLATE_NAME = 'Compare Wikidata with CSV'.freeze
     WIKI_USERNAME = ENV['WIKI_USERNAME']
@@ -40,10 +68,8 @@ module CompareWithWikidata
       }
 
       always_overwrite.each do |template_file, subpage|
-        pathname = Pathname.new("templates/#{template_file}.erb")
-        template = ERB.new(pathname.read, nil, '-')
-        dont_edit = "<!-- WARNING: This template is generated automatically. Any changes will be overwritten the next time the prompt is refreshed. -->\n"
-        wikitext = dont_edit + template.result(binding)
+        template = Template.new(file: template_file, page: subpage, context: binding)
+        wikitext = template.wikitext
         title = "#{page_title}#{subpage}"
         if ENV.key?('DEBUG')
           puts "# #{title}\n#{wikitext}"
