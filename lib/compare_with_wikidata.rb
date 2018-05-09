@@ -73,9 +73,13 @@ module CompareWithWikidata
 
     def client
       abort 'Please set WIKI_USERNAME and WIKI_PASSWORD' if WIKI_USERNAME.to_s.empty? || WIKI_PASSWORD.to_s.empty?
-      @client ||= MediawikiApi::Client.new("https://#{mediawiki_site}/w/api.php").tap do |c|
-        result = c.log_in(WIKI_USERNAME, WIKI_PASSWORD)
-        raise "MediawikiApi::Client#log_in failed: #{result}" unless result['result'] == 'Success'
+      @client ||= CompareWithWikidata::MediawikiAPIClient.new(
+        mediawiki_site: mediawiki_site,
+        username:       WIKI_USERNAME,
+        password:       WIKI_PASSWORD
+      ).tap do |c|
+        result = c.log_in
+        raise "MediawikiAPIClient#log_in failed: #{result}" unless result['result'] == 'Success'
       end
     end
 
