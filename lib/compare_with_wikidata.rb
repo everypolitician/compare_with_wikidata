@@ -2,6 +2,7 @@ require 'compare_with_wikidata/version'
 
 require 'compare_with_wikidata/membership_list/wikidata'
 require 'compare_with_wikidata/comparison'
+require 'compare_with_wikidata/mediawiki_api_client'
 
 require 'csv'
 require 'erb'
