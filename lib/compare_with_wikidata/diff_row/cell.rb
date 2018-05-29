@@ -67,6 +67,7 @@ module CompareWithWikidata
       end
 
       def value
+        return sparql_value if sparql_value == csv_value
         [sparql_value, csv_value].compact.join(separator)
       end
 
