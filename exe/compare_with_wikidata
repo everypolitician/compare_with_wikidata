@@ -18,5 +18,5 @@ options = URI.decode_www_form(query).map { |k, v| [k.to_sym, v] }.to_h
 
 warn "Running with options: #{options.inspect}" if ENV.key?('DEBUG')
 
-diff_output_generator = CompareWithWikidata::DiffOutputGenerator.new(**options)
+diff_output_generator = CompareWithWikidata::DiffOutputGenerator.new(options)
 diff_output_generator.run!
