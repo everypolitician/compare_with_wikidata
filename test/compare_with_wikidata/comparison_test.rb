@@ -26,6 +26,29 @@ describe CompareWithWikidata::Comparison do
     end
   end
 
+  describe 'single column change' do
+    let(:sparql_items) { [{ id: 1, name: 'Alice' }, { id: 2, name: 'Bob' }] }
+    let(:csv_items) { [{ id: 1, name: 'Alice' }, { id: 2, name: 'Bobby' }] }
+
+    it 'has the expected headers' do
+      subject.headers.must_equal ['@@', :id, :name]
+    end
+
+    it 'returns the correct number of diff_rows' do
+      subject.diff_rows.size.must_equal 1
+    end
+
+    it 'returns DiffRow instances from diff_rows' do
+      subject.diff_rows.first.class.must_equal CompareWithWikidata::DiffRow
+    end
+
+    it 'constructs a CSV with the one difference' do
+      subject.to_csv.lines.count.must_equal 2
+      subject.to_csv.lines.first.must_equal "@@,id,name\n"
+      subject.to_csv.lines.last.must_equal "->,2,Bob->Bobby\n"
+    end
+  end
+
   describe 'SPARQL items with Wikidata URL prefix' do
     let(:sparql_items) do
       [

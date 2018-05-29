@@ -1,6 +1,18 @@
 require 'test_helper'
 
 describe CompareWithWikidata::DiffRow do
+  describe 'simple comparison' do
+    subject { CompareWithWikidata::DiffRow.new(headers: headers, row: row) }
+    let(:headers) { %w[@@ id name] }
+
+    describe 'when only the name changes' do
+      let(:row) { ['->', '2', 'Bob->Bobby'] }
+      it 'only has a change in a single cell' do
+        subject.template_params.must_equal '@@=->|id=2|id_sparql=2|id_csv=2|name=Bob->Bobby|name_sparql=Bob|name_csv=Bobby'
+      end
+    end
+  end
+
   describe 'cells containing Q values' do
     it 'replaces them if they span the entire cell' do
       row = CompareWithWikidata::DiffRow.new(headers: %w[@@ name], row: %w[+++ Q42])
