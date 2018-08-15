@@ -41,5 +41,5 @@ When you run the tests with `rake test` a coverage report is automatically gener
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/chrismytton/compare_with_wikidata.
+Bug reports and pull requests are welcome on GitHub at https://github.com/everypolitician/compare_with_wikidata.
 
